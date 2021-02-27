@@ -1,0 +1,7 @@
+domain: tass.io
+repo: github.com/tass-io/tass-operator
+resources:
+- group: serverless
+  kind: Workflow
+  version: v1alpha1
+version: "2"

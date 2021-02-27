@@ -1,0 +1,7 @@
+apiVersion: serverless.tass.io/v1alpha1
+kind: Workflow
+metadata:
+  name: workflow-sample
+spec:
+  # Add fields here
+  foo: bar

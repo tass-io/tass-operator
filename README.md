@@ -1,2 +1,3 @@
 # tass-operator
-Create workflow on Kubernetes
+
+Tass operator in K8s.
