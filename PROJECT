@@ -4,4 +4,7 @@ resources:
 - group: serverless
   kind: Workflow
   version: v1alpha1
+- group: serverless
+  kind: Function
+  version: v1alpha1
 version: "2"

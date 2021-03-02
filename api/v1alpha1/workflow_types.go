@@ -147,7 +147,7 @@ const (
 // Comparision is used to compare with the flow result
 // Comparision can be string, int or bool
 // TODO: Validation needed
-type Comparision interface{}
+type Comparision string
 
 // Destination defines the downstream Flows based on the condition result
 type Destination struct {
