@@ -38,10 +38,21 @@ type WorkflowReconciler struct {
 // +kubebuilder:rbac:groups=serverless.tass.io,resources=workflows/status,verbs=get;update;patch
 
 func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("workflow", req.NamespacedName)
+	ctx := context.Background()
+	log := r.Log.WithValues("workflow", req.NamespacedName)
 
-	// your logic here
+	var original serverlessv1alpha1.Workflow
+	if err := r.Get(ctx, req.NamespacedName, &original); err != nil {
+		log.Error(err, "unable to fetch Workflow")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+	log.V(1).Info("The Workflow environment is", "environment", original.Spec.Environment)
+	log.V(1).Info("The Workflow Spec is", "spec", original.Spec.Spec)
+
+	original.Status.Status = "Running"
+	if err := r.Status().Update(ctx, &original); err != nil {
+		log.Error(err, "unable to update status")
+	}
 
 	return ctrl.Result{}, nil
 }

@@ -1,0 +1,157 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.5
+  creationTimestamp: null
+  name: workflows.serverless.tass.io
+spec:
+  group: serverless.tass.io
+  names:
+    kind: Workflow
+    listKind: WorkflowList
+    plural: workflows
+    singular: workflow
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: Workflow is the Schema for the workflows API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: WorkflowSpec defines the desired state of Workflow
+          properties:
+            environment:
+              description: Environment represents the language environment of the
+                code segments The controller wil then launch the corresponding language
+                environment
+              enum:
+              - Golang
+              - Python
+              - JavaScript
+              type: string
+            spec:
+              description: Spec is a list of Flows
+              items:
+                description: Flow defines the logic of a Function in a workflow
+                properties:
+                  condition:
+                    description: Condition is the control logic of the flow Only worked
+                      when the Statement is 'Switch' or 'Loop'
+                    properties:
+                      operator:
+                        description: 'Operator defines the illegal operation in workflow
+                          condition statement Valid values are: - eq: The result is
+                          equal to the target - ne: The result is not equal to the
+                          target - lt: The result is less than the target - le: The
+                          result is less than or equal to the target - gt: The result
+                          is greater than the target - ge: The result is greater than
+                          or equal to the target.'
+                        enum:
+                        - eq
+                        - ne
+                        - lt
+                        - le
+                        - gt
+                        - ge
+                        type: string
+                      target:
+                        description: 'Target is the comparation object to the flow
+                          result Target can be string, int or bool TODO: Validation
+                          nedded'
+                        type: string
+                      type:
+                        description: 'Type is the data type that Tass workflow condition
+                          support It also implicitly shows the result type of the
+                          flow Valid values are: - string: The condition type is string
+                          - int: The condition type is int - bool: The condition type
+                          is boolean'
+                        enum:
+                        - string
+                        - int
+                        - bool
+                        type: string
+                    required:
+                    - operator
+                    - target
+                    - type
+                    type: object
+                  function:
+                    description: Function is the function name which has been defined
+                      in Tass
+                    type: string
+                  inputs:
+                    description: Inputs specify which flows need to complete before
+                      this flow can start
+                    items:
+                      type: string
+                    type: array
+                  name:
+                    description: Name is the name of the flow which is unique in a
+                      workflow. A function may be called multiple times in different
+                      places in a workflow. So we need a Flow name to clear the logic.
+                    type: string
+                  outputs:
+                    description: Outputs specify where the result of this flow should
+                      go
+                    items:
+                      type: string
+                    type: array
+                  statement:
+                    description: 'Statement shows the flow control logic type Valid
+                      values are: - direct: The result of the flow go to downstream
+                      directly; - switch: The result of the flow go to downstream
+                      based on the switch condition; - loop: The result of the flow
+                      go back to itself until the loop condition break;'
+                    enum:
+                    - direct
+                    - switch
+                    - loop
+                    type: string
+                required:
+                - function
+                - inputs
+                - name
+                - outputs
+                type: object
+              type: array
+          required:
+          - environment
+          - spec
+          type: object
+        status:
+          description: WorkflowStatus defines the observed state of Workflow
+          properties:
+            status:
+              description: Status defined the observed state of workflow
+              type: string
+          required:
+          - status
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

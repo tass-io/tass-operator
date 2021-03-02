@@ -4,4 +4,18 @@ metadata:
   name: workflow-sample
 spec:
   # Add fields here
-  foo: bar
+  environment: Golang
+  spec:
+  - name: flow-sample
+    function: hello
+    inputs:
+    - hi
+    - hey
+    outputs:
+    - exit
+    - bye
+    statement: loop
+    condition:
+      type: string
+      operator: eq
+      target: goodbye
