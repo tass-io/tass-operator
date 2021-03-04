@@ -30,7 +30,12 @@ type WorkflowSpec struct {
 
 	// Environment represents the language environment of the code segments
 	// The controller wil then launch the corresponding language environment
+	// TODO: Is this field required? Discussion needed
 	Environment Environment `json:"environment"`
+
+	// Domain indicates the namespace of the workflow
+	// A workflow can only use Functions in the same domain
+	Domain string `json:"domain"`
 
 	// Spec is a list of Flows
 	Spec []Flow `json:"spec"`
@@ -107,7 +112,7 @@ type Condition struct {
 	// - ge: The result is greater than or equal to the target.
 	Operator OperatorType `json:"operator"`
 	// Comparision is used to compare with the flow result
-	Comparision Comparision `json:"target"`
+	Comparision Comparision `json:"comparision"`
 	// Destination defines the downstream Flows based on the condition result
 	Destination Destination `json:"destination"`
 }
@@ -151,10 +156,10 @@ type Comparision string
 
 // Destination defines the downstream Flows based on the condition result
 type Destination struct {
-	// IsSatisfied defines the downstream Flows if the condition is satisfied
-	IsSatisfied []string `json:"isSatisfied"`
-	// IsNotSatisfied defines the downstream Flows if the condition is satisfied
-	IsNotSatisfied []string `json:"isNotSatisfied"`
+	// IsTrue defines the downstream Flows if the condition is satisfied
+	IsTrue []string `json:"isTrue"`
+	// IsFalse defines the downstream Flows if the condition is satisfied
+	IsFalse []string `json:"isFalse"`
 }
 
 // WorkflowStatus defines the observed state of Workflow

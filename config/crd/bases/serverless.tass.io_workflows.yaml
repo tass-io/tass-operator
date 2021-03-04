@@ -36,10 +36,14 @@ spec:
         spec:
           description: WorkflowSpec defines the desired state of Workflow
           properties:
+            domain:
+              description: Domain indicates the namespace of the workflow A workflow
+                can only use Functions in the same domain
+              type: string
             environment:
-              description: Environment represents the language environment of the
+              description: 'Environment represents the language environment of the
                 code segments The controller wil then launch the corresponding language
-                environment
+                environment TODO: Is this field required? Discussion needed'
               enum:
               - Golang
               - Python
@@ -54,6 +58,30 @@ spec:
                     description: Condition is the control logic of the flow Only worked
                       when the Statement is 'Switch' or 'Loop'
                     properties:
+                      comparision:
+                        description: Comparision is used to compare with the flow
+                          result
+                        type: string
+                      destination:
+                        description: Destination defines the downstream Flows based
+                          on the condition result
+                        properties:
+                          isFalse:
+                            description: IsFalse defines the downstream Flows if the
+                              condition is satisfied
+                            items:
+                              type: string
+                            type: array
+                          isTrue:
+                            description: IsTrue defines the downstream Flows if the
+                              condition is satisfied
+                            items:
+                              type: string
+                            type: array
+                        required:
+                        - isFalse
+                        - isTrue
+                        type: object
                       operator:
                         description: 'Operator defines the illegal operation in workflow
                           condition statement Valid values are: - eq: The result is
@@ -70,11 +98,6 @@ spec:
                         - gt
                         - ge
                         type: string
-                      target:
-                        description: 'Target is the comparation object to the flow
-                          result Target can be string, int or bool TODO: Validation
-                          nedded'
-                        type: string
                       type:
                         description: 'Type is the data type that Tass workflow condition
                           support It also implicitly shows the result type of the
@@ -87,8 +110,9 @@ spec:
                         - bool
                         type: string
                     required:
+                    - comparision
+                    - destination
                     - operator
-                    - target
                     - type
                     type: object
                   function:
@@ -128,9 +152,11 @@ spec:
                 - inputs
                 - name
                 - outputs
+                - statement
                 type: object
               type: array
           required:
+          - domain
           - environment
           - spec
           type: object

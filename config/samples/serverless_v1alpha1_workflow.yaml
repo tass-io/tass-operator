@@ -5,17 +5,21 @@ metadata:
 spec:
   # Add fields here
   environment: Golang
+  domain: sail
   spec:
   - name: flow-sample
-    function: hello
+    function: function-sample
     inputs:
     - hi
     - hey
     outputs:
     - exit
     - bye
-    statement: loop
+    statement: switch
     condition:
       type: string
       operator: eq
-      target: goodbye
+      comparision: money
+      destination:
+        isTrue: [exit]
+        isFalse: [bye]

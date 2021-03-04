@@ -28,8 +28,14 @@ type FunctionSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of Function. Edit Function_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Domain indicates the namespace of a Function
+	Domain string `json:"domain"`
+
+	// Environment represents the language environment of the code segments
+	// The scheduler wil then launch the corresponding language environment
+	Environment Environment `json:"environment"`
+
+	// TODO: Add more fields in the future
 }
 
 // FunctionStatus defines the observed state of Function

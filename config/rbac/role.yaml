@@ -9,6 +9,26 @@ rules:
 - apiGroups:
   - serverless.tass.io
   resources:
+  - functions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - serverless.tass.io
+  resources:
+  - functions/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - serverless.tass.io
+  resources:
   - workflows
   verbs:
   - create

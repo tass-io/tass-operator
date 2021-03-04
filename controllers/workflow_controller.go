@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -49,6 +50,29 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	log.V(1).Info("The Workflow environment is", "environment", original.Spec.Environment)
 	log.V(1).Info("The Workflow Spec is", "spec", original.Spec.Spec)
 
+	// For example, we want to get the Function list...
+	var functionList serverlessv1alpha1.FunctionList
+	if err := r.List(ctx, &functionList, client.InNamespace(req.Namespace)); err != nil {
+		log.Error(err, "unable to list child Functions")
+		return ctrl.Result{}, err
+	}
+
+	// Make sure every Function in a Workflow has been defined in Function CRD
+	domainFunctionMap := map[string]bool{}
+	for _, pre := range functionList.Items {
+		if pre.Spec.Domain == original.Spec.Domain {
+			domainFunctionMap[pre.Name] = true
+		}
+	}
+	for _, flow := range original.Spec.Spec {
+		if !domainFunctionMap[flow.Function] {
+			err := errors.New("Function " + flow.Name + " not defined in [" + original.Spec.Domain + "]")
+			log.Error(err, "Workflow validation error")
+			return ctrl.Result{}, nil
+		}
+	}
+
+	// TODO: This is just an example status
 	original.Status.Status = "Running"
 	if err := r.Status().Update(ctx, &original); err != nil {
 		log.Error(err, "unable to update status")
