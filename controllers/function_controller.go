@@ -20,11 +20,15 @@ import (
 	"context"
 
 	"github.com/go-logr/logr"
+
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
+	"github.com/tass-io/tass-operator/pkg/spawn"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // FunctionReconciler reconciles a Function object
@@ -38,16 +42,48 @@ type FunctionReconciler struct {
 // +kubebuilder:rbac:groups=serverless.tass.io,resources=functions/status,verbs=get;update;patch
 
 func (r *FunctionReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("function", req.NamespacedName)
+	ctx := context.Background()
+	log := r.Log.WithValues("function", req.NamespacedName)
 
-	// your logic here
+	var instance serverlessv1alpha1.Function
+	if err := r.Get(ctx, req.NamespacedName, &instance); err != nil {
+		log.Error(err, "unable to fetch Function")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
 
+	// TODO: Call storage center to store the function code
+
+	// FIXME: This is a sample of creating a Pod
+	pod := spawn.NewPodForCR(instance)
+	if err := ctrl.SetControllerReference(&instance, pod, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
+	podInstance := &corev1.Pod{}
+	// try to see if the pod already exists
+	if err := r.Get(ctx, req.NamespacedName, podInstance); errors.IsNotFound(err) {
+		log.V(1).Info("Creating Pod...")
+
+		// does not exist, create a pod
+		if err = r.Create(ctx, pod); err != nil {
+			return ctrl.Result{}, err
+		}
+		// Successfully created a Pod
+		log.V(1).Info("Pod Created successfully", "name", pod.Name)
+
+		return ctrl.Result{}, nil
+	} else if err != nil {
+		// requeue with err
+		log.Error(err, "Cannot create pod")
+		return ctrl.Result{}, err
+	} else {
+		log.V(1).Info("Pod exists, no need to create a pod.")
+	}
 	return ctrl.Result{}, nil
 }
 
 func (r *FunctionReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&serverlessv1alpha1.Function{}).
+		Owns(&corev1.Pod{}).
 		Complete(r)
 }

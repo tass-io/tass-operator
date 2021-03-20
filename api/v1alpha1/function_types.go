@@ -35,6 +35,10 @@ type FunctionSpec struct {
 	// The scheduler wil then launch the corresponding language environment
 	Environment Environment `json:"environment"`
 
+	// FIXME: Delete when need to create a real Pod
+	// Command is a test for creating a Pod
+	Command string `json:"command"`
+
 	// TODO: Add more fields in the future
 }
 
