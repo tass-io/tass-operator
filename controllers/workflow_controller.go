@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"errors"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -26,6 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
+	"github.com/tass-io/tass-operator/pkg/workflow"
 )
 
 // WorkflowReconciler reconciles a Workflow object
@@ -42,13 +42,13 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("workflow", req.NamespacedName)
 
-	var original serverlessv1alpha1.Workflow
-	if err := r.Get(ctx, req.NamespacedName, &original); err != nil {
+	var instance serverlessv1alpha1.Workflow
+	if err := r.Get(ctx, req.NamespacedName, &instance); err != nil {
 		log.Error(err, "unable to fetch Workflow")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	log.V(1).Info("The Workflow environment is", "environment", original.Spec.Environment)
-	log.V(1).Info("The Workflow Spec is", "spec", original.Spec.Spec)
+	log.V(1).Info("The Workflow environment is", "environment", instance.Spec.Environment)
+	log.V(1).Info("The Workflow Spec is", "spec", instance.Spec.Spec)
 
 	// For example, we want to get the Function list...
 	var functionList serverlessv1alpha1.FunctionList
@@ -57,24 +57,20 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	// Make sure every Function in a Workflow has been defined in Function CRD
-	domainFunctionMap := map[string]bool{}
-	for _, pre := range functionList.Items {
-		if pre.Spec.Domain == original.Spec.Domain {
-			domainFunctionMap[pre.Name] = true
-		}
+	// TODO: This kind of check should be placed in the admission webhook
+	// Put here temporarily
+	if err := workflow.ValidateFuncExist(&instance, &functionList); err != nil {
+		log.Error(err, "Workflow validation error")
+		return ctrl.Result{}, nil
 	}
-	for _, flow := range original.Spec.Spec {
-		if !domainFunctionMap[flow.Function] {
-			err := errors.New("Function " + flow.Name + " not defined in [" + original.Spec.Domain + "]")
-			log.Error(err, "Workflow validation error")
-			return ctrl.Result{}, nil
-		}
+	if err := workflow.ValidateFlows(&instance); err != nil {
+		log.Error(err, "Workflow validation error")
+		return ctrl.Result{}, nil
 	}
 
 	// TODO: This is just an example status
-	original.Status.Status = "Running"
-	if err := r.Status().Update(ctx, &original); err != nil {
+	instance.Status.Status = "Running"
+	if err := r.Status().Update(ctx, &instance); err != nil {
 		log.Error(err, "unable to update status")
 	}
 

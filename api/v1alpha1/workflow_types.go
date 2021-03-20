@@ -77,7 +77,7 @@ type Flow struct {
 	// Condition is the control logic of the flow
 	// Only worked when the Statement is 'Switch' or 'Loop'
 	// +optional
-	Condition Condition `json:"condition,omitempty"`
+	Condition *Condition `json:"condition,omitempty"`
 }
 
 // Statement shows the flow control logic type
