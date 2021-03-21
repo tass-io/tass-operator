@@ -18,6 +18,8 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 
@@ -46,12 +48,53 @@ func (r *FunctionReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("function", req.NamespacedName)
 
 	var instance serverlessv1alpha1.Function
+	// TODO: Call storage center to store the function code
 	if err := r.Get(ctx, req.NamespacedName, &instance); err != nil {
 		log.Error(err, "unable to fetch Function")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// TODO: Call storage center to store the function code
+	// TODO: This is a sample of finalizer
+	fnFinalizerName := "function.finalizers.tass.io"
+
+	// examine DeletionTimestamp to determine if object is under deletion
+	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
+		// The object is not being deleted, so if it does not have our finalizer,
+		// then lets add the finalizer and update the object. This is equivalent
+		// registering our finalizer.
+		if !containsString(instance.ObjectMeta.Finalizers, fnFinalizerName) {
+			log.V(1).Info("Add Function finalizer...")
+			instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, fnFinalizerName)
+			if err := r.Update(ctx, &instance); err != nil {
+				return ctrl.Result{}, err
+			}
+			log.V(1).Info("Add Function finalizer successfully")
+		}
+	} else {
+		log.V(1).Info("Remove Function finalizer...")
+		// FIXME: Mock long time to remove a resource, which will be easier to debug
+		// Remove it in the future.
+		time.Sleep(time.Second * 5)
+		// The object is being deleted
+		if containsString(instance.ObjectMeta.Finalizers, fnFinalizerName) {
+			// our finalizer is present, so lets handle any external dependency
+			if err := r.deleteExternalPodResource(&instance); err != nil {
+				// if fail to delete the external dependency here, return with error
+				// so that it can be retried
+				return ctrl.Result{}, err
+			}
+
+			// remove our finalizer from the list and update it.
+			instance.ObjectMeta.Finalizers = removeString(instance.ObjectMeta.Finalizers, fnFinalizerName)
+			if err := r.Update(ctx, &instance); err != nil {
+				return ctrl.Result{}, err
+			}
+			log.V(1).Info("Remove Function finalizer successfully")
+		}
+
+		// Stop reconciliation as the item is being deleted
+		return ctrl.Result{}, nil
+	}
 
 	// FIXME: This is a sample of creating a Pod
 	pod := spawn.NewPodForCR(instance)
@@ -79,6 +122,48 @@ func (r *FunctionReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		log.V(1).Info("Pod exists, no need to create a pod.")
 	}
 	return ctrl.Result{}, nil
+}
+
+func (r *FunctionReconciler) deleteExternalPodResource(fn *serverlessv1alpha1.Function) error {
+	//
+	// delete external Pod resources associated with the Function
+	//
+	// Ensure that delete implementation is idempotent and safe to invoke
+	// multiple types for same object.
+	pList := &corev1.PodList{}
+	err := r.List(context.Background(), pList,
+		client.InNamespace(fn.Namespace), client.MatchingLabels(map[string]string{"app": fn.Name}))
+	if err != nil {
+		return fmt.Errorf("Cannot find Pod match Function, %s", err.Error())
+	}
+	for _, pod := range pList.Items {
+		fmt.Println(pod.Name)
+		err = r.Delete(context.Background(), &pod)
+		if err != nil {
+			return fmt.Errorf("Cannot delete Pod %s/%s, %s", pod.Namespace, pod.Name, err.Error())
+		}
+	}
+	return nil
+}
+
+// Helper functions to check and remove string from a slice of strings.
+func containsString(slice []string, s string) bool {
+	for _, item := range slice {
+		if item == s {
+			return true
+		}
+	}
+	return false
+}
+
+func removeString(slice []string, s string) (result []string) {
+	for _, item := range slice {
+		if item == s {
+			continue
+		}
+		result = append(result, item)
+	}
+	return
 }
 
 func (r *FunctionReconciler) SetupWithManager(mgr ctrl.Manager) error {
