@@ -57,7 +57,8 @@ func (r *FunctionReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// TODO: This is a sample of finalizer
 	fnFinalizerName := "function.finalizers.tass.io"
 
-	// examine DeletionTimestamp to determine if object is under deletion
+	// Examine DeletionTimestamp to determine if object is under deletion
+	// If an object is under deletion, gc controller will create a field called `meta.DeletionTimestamp`
 	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
 		// The object is not being deleted, so if it does not have our finalizer,
 		// then lets add the finalizer and update the object. This is equivalent
@@ -74,8 +75,8 @@ func (r *FunctionReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		log.V(1).Info("Remove Function finalizer...")
 		// FIXME: Mock long time to remove a resource, which will be easier to debug
 		// Remove it in the future.
-		time.Sleep(time.Second * 5)
-		// The object is being deleted
+		time.Sleep(time.Second * 10)
+		// The object is being deleted`
 		if containsString(instance.ObjectMeta.Finalizers, fnFinalizerName) {
 			// our finalizer is present, so lets handle any external dependency
 			if err := r.deleteExternalPodResource(&instance); err != nil {
@@ -125,6 +126,8 @@ func (r *FunctionReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 }
 
 func (r *FunctionReconciler) deleteExternalPodResource(fn *serverlessv1alpha1.Function) error {
+	// Actually, due to the help of garbage collector in k8s, we don't need to delete the cascade resource manually
+	// Here I just show a case of deleteing a Pod
 	//
 	// delete external Pod resources associated with the Function
 	//
@@ -137,7 +140,6 @@ func (r *FunctionReconciler) deleteExternalPodResource(fn *serverlessv1alpha1.Fu
 		return fmt.Errorf("Cannot find Pod match Function, %s", err.Error())
 	}
 	for _, pod := range pList.Items {
-		fmt.Println(pod.Name)
 		err = r.Delete(context.Background(), &pod)
 		if err != nil {
 			return fmt.Errorf("Cannot delete Pod %s/%s, %s", pod.Namespace, pod.Name, err.Error())
