@@ -26,6 +26,10 @@ import (
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
 	"github.com/tass-io/tass-operator/pkg/workflow"
+
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // WorkflowReconciler reconciles a Workflow object
@@ -72,6 +76,28 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	instance.Status.Status = "Running"
 	if err := r.Status().Update(ctx, &instance); err != nil {
 		log.Error(err, "unable to update status")
+	}
+
+	// FIXME: A sample of create a Function by controller-runtime
+	// Only show the case of creating a Function, should be deleted manually
+	var sample serverlessv1alpha1.Function
+	if err := r.Get(ctx, types.NamespacedName{Namespace: "default", Name: "create-function-by-controller-runtime"}, &sample); errors.IsNotFound(err) {
+		// do something
+		sample = serverlessv1alpha1.Function{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "default",
+				Name:      "create-function-by-controller-runtime",
+			},
+			Spec: serverlessv1alpha1.FunctionSpec{
+				Domain:      "controller-runtime",
+				Environment: "JavaScript",
+				Command:     "controller-runtime",
+			},
+		}
+		if err := r.Create(context.Background(), &sample); err != nil {
+			log.Error(err, "Cannot create Function")
+			return ctrl.Result{}, err
+		}
 	}
 
 	return ctrl.Result{}, nil

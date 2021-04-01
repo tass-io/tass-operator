@@ -75,11 +75,11 @@ func (r *FunctionReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		log.V(1).Info("Remove Function finalizer...")
 		// FIXME: Mock long time to remove a resource, which will be easier to debug
 		// Remove it in the future.
-		time.Sleep(time.Second * 10)
-		// The object is being deleted`
+		time.Sleep(time.Second * 5)
+		// The object is being deleted
 		if containsString(instance.ObjectMeta.Finalizers, fnFinalizerName) {
 			// our finalizer is present, so lets handle any external dependency
-			if err := r.deleteExternalPodResource(&instance); err != nil {
+			if err := r.deleteExternalResources(&instance); err != nil {
 				// if fail to delete the external dependency here, return with error
 				// so that it can be retried
 				return ctrl.Result{}, err
@@ -125,7 +125,7 @@ func (r *FunctionReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func (r *FunctionReconciler) deleteExternalPodResource(fn *serverlessv1alpha1.Function) error {
+func (r *FunctionReconciler) deleteExternalResources(fn *serverlessv1alpha1.Function) error {
 	// Actually, due to the help of garbage collector in k8s, we don't need to delete the cascade resource manually
 	// Here I just show a case of deleteing a Pod
 	//
