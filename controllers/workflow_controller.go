@@ -89,9 +89,7 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 				Name:      "create-function-by-controller-runtime",
 			},
 			Spec: serverlessv1alpha1.FunctionSpec{
-				Domain:      "controller-runtime",
 				Environment: "JavaScript",
-				Command:     "controller-runtime",
 			},
 		}
 		if err := r.Create(context.Background(), &sample); err != nil {

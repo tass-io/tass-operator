@@ -34,13 +34,6 @@ spec:
         spec:
           description: FunctionSpec defines the desired state of Function
           properties:
-            command:
-              description: 'FIXME: Delete when need to create a real Pod Command is
-                a test for creating a Pod'
-              type: string
-            domain:
-              description: Domain indicates the namespace of a Function
-              type: string
             environment:
               description: Environment represents the language environment of the
                 code segments The scheduler wil then launch the corresponding language
@@ -51,8 +44,6 @@ spec:
               - JavaScript
               type: string
           required:
-          - command
-          - domain
           - environment
           type: object
         status:

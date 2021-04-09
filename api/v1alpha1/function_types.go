@@ -25,21 +25,9 @@ import (
 
 // FunctionSpec defines the desired state of Function
 type FunctionSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Domain indicates the namespace of a Function
-	Domain string `json:"domain"`
-
 	// Environment represents the language environment of the code segments
 	// The scheduler wil then launch the corresponding language environment
 	Environment Environment `json:"environment"`
-
-	// FIXME: Delete when need to create a real Pod
-	// Command is a test for creating a Pod
-	Command string `json:"command"`
-
-	// TODO: Add more fields in the future
 }
 
 // FunctionStatus defines the observed state of Function

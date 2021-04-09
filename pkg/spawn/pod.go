@@ -1,8 +1,6 @@
 package spawn
 
 import (
-	"strings"
-
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,7 +23,7 @@ func NewPodForCR(cr serverlessv1alpha1.Function) *corev1.Pod {
 				{
 					Name:    "busybox",
 					Image:   "busybox",
-					Command: strings.Split(cr.Spec.Command, " "),
+					Command: []string{"echo", "hello"},
 				},
 			},
 			RestartPolicy: corev1.RestartPolicyOnFailure,

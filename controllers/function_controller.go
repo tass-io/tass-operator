@@ -48,7 +48,6 @@ func (r *FunctionReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("function", req.NamespacedName)
 
 	var instance serverlessv1alpha1.Function
-	// TODO: Call storage center to store the function code
 	if err := r.Get(ctx, req.NamespacedName, &instance); err != nil {
 		log.Error(err, "unable to fetch Function")
 		return ctrl.Result{}, client.IgnoreNotFound(err)

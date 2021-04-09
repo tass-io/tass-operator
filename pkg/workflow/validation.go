@@ -11,9 +11,7 @@ import (
 func ValidateFuncExist(wf *serverlessv1alpha1.Workflow, fl *serverlessv1alpha1.FunctionList) error {
 	domainFunctionMap := map[string]bool{}
 	for _, pre := range fl.Items {
-		if pre.Spec.Domain == wf.Spec.Domain {
-			domainFunctionMap[pre.Name] = true
-		}
+		domainFunctionMap[pre.Name] = true
 	}
 	for _, flow := range wf.Spec.Spec {
 		if !domainFunctionMap[flow.Function] {
