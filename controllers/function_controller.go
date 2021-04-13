@@ -121,6 +121,35 @@ func (r *FunctionReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	} else {
 		log.V(1).Info("Pod exists, no need to create a pod.")
 	}
+
+	// FIXME: This is a sample of creating a Service
+	// Actually, the Service should be created in the workflow CRD
+	// Here the controller creates such a resource to be convenient for cli testing
+	svc := spawn.NewSvcForCR(instance)
+	if err := ctrl.SetControllerReference(&instance, svc, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
+	svcInstance := &corev1.Service{}
+	// try to see if the service already exists
+	if err := r.Get(ctx, req.NamespacedName, svcInstance); errors.IsNotFound(err) {
+		log.V(1).Info("Creating Service...")
+
+		// does not exist, create a Service
+		if err = r.Create(ctx, svc); err != nil {
+			return ctrl.Result{}, err
+		}
+		// Successfully created a Service
+		log.V(1).Info("Service Created successfully", "name", svc.Name)
+
+		return ctrl.Result{}, nil
+	} else if err != nil {
+		// requeue with err
+		log.Error(err, "Cannot create a Service")
+		return ctrl.Result{}, err
+	} else {
+		log.V(1).Info("Service exists, no need to create a Service.")
+	}
+
 	return ctrl.Result{}, nil
 }
 

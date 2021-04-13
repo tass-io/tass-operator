@@ -2,6 +2,8 @@ apiVersion: serverless.tass.io/v1alpha1
 kind: Function
 metadata:
   name: function-sample
+  labels:
+    
 spec:
   # Add fields here
   domain: sail
