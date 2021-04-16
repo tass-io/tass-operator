@@ -29,13 +29,7 @@ type WorkflowSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Environment represents the language environment of the code segments
-	// The controller wil then launch the corresponding language environment
-	// TODO: Is this field required? Discussion needed
 	Environment Environment `json:"environment"`
-
-	// Domain indicates the namespace of the workflow
-	// A workflow can only use Functions in the same domain
-	Domain string `json:"domain"`
 
 	// Spec is a list of Flows
 	Spec []Flow `json:"spec"`

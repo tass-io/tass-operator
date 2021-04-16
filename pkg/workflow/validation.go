@@ -15,7 +15,7 @@ func ValidateFuncExist(wf *serverlessv1alpha1.Workflow, fl *serverlessv1alpha1.F
 	}
 	for _, flow := range wf.Spec.Spec {
 		if !domainFunctionMap[flow.Function] {
-			return errors.New("Function " + flow.Function + " not defined in [" + wf.Spec.Domain + "]")
+			return errors.New("Function " + flow.Function + " not defined in namespace [" + wf.Namespace + "]")
 		}
 	}
 	return nil

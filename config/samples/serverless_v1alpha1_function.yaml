@@ -5,7 +5,4 @@ metadata:
   labels:
     
 spec:
-  # Add fields here
-  domain: sail
   environment: Golang
-  command: "echo Weeee!"
