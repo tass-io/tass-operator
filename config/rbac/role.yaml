@@ -29,6 +29,26 @@ rules:
 - apiGroups:
   - serverless.tass.io
   resources:
+  - workflowruntimes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - serverless.tass.io
+  resources:
+  - workflowruntimes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - serverless.tass.io
+  resources:
   - workflows
   verbs:
   - create

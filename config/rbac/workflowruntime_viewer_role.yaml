@@ -1,0 +1,20 @@
+# permissions for end users to view workflowruntimes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: workflowruntime-viewer-role
+rules:
+- apiGroups:
+  - serverless.tass.io
+  resources:
+  - workflowruntimes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - serverless.tass.io
+  resources:
+  - workflowruntimes/status
+  verbs:
+  - get

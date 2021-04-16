@@ -36,14 +36,9 @@ spec:
         spec:
           description: WorkflowSpec defines the desired state of Workflow
           properties:
-            domain:
-              description: Domain indicates the namespace of the workflow A workflow
-                can only use Functions in the same domain
-              type: string
             environment:
-              description: 'Environment represents the language environment of the
-                code segments The controller wil then launch the corresponding language
-                environment TODO: Is this field required? Discussion needed'
+              description: Environment represents the language environment of the
+                code segments
               enum:
               - Golang
               - Python
@@ -156,7 +151,6 @@ spec:
                 type: object
               type: array
           required:
-          - domain
           - environment
           - spec
           type: object
