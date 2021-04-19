@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,6 +26,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
+	"github.com/tass-io/tass-operator/pkg/spawn"
+
+	appsv1 "k8s.io/api/apps/v1"
 )
 
 // WorkflowRuntimeReconciler reconciles a WorkflowRuntime object
@@ -38,10 +42,35 @@ type WorkflowRuntimeReconciler struct {
 // +kubebuilder:rbac:groups=serverless.tass.io,resources=workflowruntimes/status,verbs=get;update;patch
 
 func (r *WorkflowRuntimeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("workflowruntime", req.NamespacedName)
+	ctx := context.Background()
+	log := r.Log.WithValues("workflowruntime", req.NamespacedName)
 
-	// your logic here
+	var instance serverlessv1alpha1.WorkflowRuntime
+	if err := r.Get(ctx, req.NamespacedName, &instance); err != nil {
+		log.Error(err, "unable to fetch WorkflowRuntime")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// A Workflow has its WorkflowRuntime which run Functions in Workflow when a request comes
+	labels := map[string]string{
+		"type": "workflowRuntime",
+		"name": req.NamespacedName.Name,
+	}
+	if err := spawn.ReconcileNewService(r, req, r.Log, r.Scheme, &instance, labels); err != nil {
+		return ctrl.Result{}, err
+	}
+	if err := spawn.ReconcileNewDeployment(r, req, r.Log, r.Scheme, &instance, labels); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// FIXME: An Example of getting info of Deployment
+	deploy := appsv1.Deployment{}
+	r.Get(ctx, req.NamespacedName, &deploy)
+	fmt.Println("---DEPLOYMENT INFO---")
+	fmt.Println(deploy.Namespace)
+	fmt.Println(deploy.Name)
+	fmt.Println(deploy.OwnerReferences)
+	fmt.Println("---------------------")
 
 	return ctrl.Result{}, nil
 }

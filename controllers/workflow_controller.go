@@ -25,11 +25,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
+	"github.com/tass-io/tass-operator/pkg/spawn"
 	"github.com/tass-io/tass-operator/pkg/workflow"
-
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 // WorkflowReconciler reconciles a Workflow object
@@ -65,11 +62,15 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// Put here temporarily
 	if err := workflow.ValidateFuncExist(&instance, &functionList); err != nil {
 		log.Error(err, "Workflow validation error")
-		return ctrl.Result{}, nil
+		// TODO: The webhook should ABORT directly
+		// Here we simply pass the check
+		// return ctrl.Result{}, nil
 	}
 	if err := workflow.ValidateFlows(&instance); err != nil {
 		log.Error(err, "Workflow validation error")
-		return ctrl.Result{}, nil
+		// TODO: The webhook should ABORT directly
+		// Here we simply pass the check
+		// return ctrl.Result{}, nil
 	}
 
 	// TODO: This is just an example status
@@ -78,24 +79,9 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		log.Error(err, "unable to update status")
 	}
 
-	// FIXME: A sample of create a Function by controller-runtime
-	// Only show the case of creating a Function, should be deleted manually
-	var sample serverlessv1alpha1.Function
-	if err := r.Get(ctx, types.NamespacedName{Namespace: "default", Name: "create-function-by-controller-runtime"}, &sample); errors.IsNotFound(err) {
-		// do something
-		sample = serverlessv1alpha1.Function{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: "default",
-				Name:      "create-function-by-controller-runtime",
-			},
-			Spec: serverlessv1alpha1.FunctionSpec{
-				Environment: "JavaScript",
-			},
-		}
-		if err := r.Create(context.Background(), &sample); err != nil {
-			log.Error(err, "Cannot create Function")
-			return ctrl.Result{}, err
-		}
+	// A Workflow has its WorkflowRuntime which run Functions in Workflow when a request comes
+	if err := spawn.ReconcileNewWorkflowRuntime(r, req, r.Log, r.Scheme, &instance); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil
