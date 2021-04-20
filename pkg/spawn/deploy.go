@@ -20,13 +20,14 @@ func ReconcileNewDeployment(
 	cli client.Client, req ctrl.Request,
 	l logr.Logger, s *runtime.Scheme,
 	i *serverlessv1alpha1.WorkflowRuntime,
-	labels map[string]string, replicas int32) error {
+	labels map[string]string, replicas int32,
+	resource corev1.ResourceRequirements) error {
 
 	ctx := context.Background()
 	log := l.WithValues("new deployment", req.NamespacedName)
 
 	deploy := DesiredDeployment(
-		req.NamespacedName.Namespace, req.NamespacedName.Name, labels)
+		req.NamespacedName.Namespace, req.NamespacedName.Name, labels, replicas, resource)
 	if err := ctrl.SetControllerReference(i, deploy, s); err != nil {
 		return err
 	}
@@ -49,11 +50,11 @@ func ReconcileNewDeployment(
 }
 
 // DesiredDeployment returns a default config of a Service
-func DesiredDeployment(namespace, name string, labels map[string]string) *appsv1.Deployment {
+func DesiredDeployment(namespace, name string, labels map[string]string,
+	replicas int32, resource corev1.ResourceRequirements) *appsv1.Deployment {
 	selector := &metav1.LabelSelector{
 		MatchLabels: labels,
 	}
-	replicas := int32(2)
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
@@ -77,6 +78,7 @@ func DesiredDeployment(namespace, name string, labels map[string]string) *appsv1
 								ContainerPort: 80,
 								Protocol:      "TCP",
 							}},
+							Resources: resource,
 						},
 					},
 				},

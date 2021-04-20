@@ -17,6 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"time"
+
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,9 +31,12 @@ type WorkflowRuntimeSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Replica defines the replication of the workflow runtime
+	// Replicas defines the replication of the workflow runtime
 	// Specificly, it determines the replication of Pods in its Deployment
-	Replica int32 `json:"replica"`
+	Replicas int32 `json:"replicas"`
+
+	// Resources defines the resource provided to the Pod
+	Resources corev1.ResourceRequirements `json:"resources"`
 
 	// TODO: Add some fields
 }
@@ -39,6 +45,47 @@ type WorkflowRuntimeSpec struct {
 type WorkflowRuntimeStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	// Instances is a Pod List that WorkflowRuntime Manages
+	Instances Instances `json:"instances"`
+}
+
+// Instances is a Pod List that WorkflowRuntime manages
+// When the Deployment created or updated, Instances should be updated
+type Instances []string
+
+// Instance records some runtime info of a Pod
+// Specificly, it contains info about Function in the Pod and Pod metadata
+type Instance struct {
+	// Spec describes metadata a Pod has
+	Spec InstanceSpec `json:"status"`
+	// ProcessRuntimes is a list of ProcessRuntime
+	ProcessRuntimes ProcessRuntimes `json:"processRuntimes"`
+}
+
+// InstanceSpec describes metadata a Pod has
+type InstanceSpec struct {
+	// Name is the name of the Pod, for example "sample-c65c4f67-skbml"
+	// It must be unique in an Instance list
+	Name string `json:"name"`
+	// CreationTimestamp is a timestamp representing the time when this Pod was created.
+	CreationTimestamp time.Time `json:"creationTimestamp"`
+	// IP address of the host to which the pod is assigned. Empty if not yet scheduled.
+	HostIP string `json:"hostIP,omitempty"`
+	// IP address allocated to the pod. Routable at least within the cluster. Empty if not yet allocated.
+	PodIP string `json:"podIP,omitempty"`
+}
+
+// ProcessRuntimes is a list of ProcessRuntime
+type ProcessRuntimes []ProcessRuntime
+
+// ProcessRuntime records the process runtime info
+type ProcessRuntime struct {
+	// Name is the name of the Function which is runned
+	Name string `json:"name"`
+	// Number is the number the processes run the same Function
+	Number int `json:"int"`
+	// TODO: Add more fileds
 }
 
 // +kubebuilder:object:root=true

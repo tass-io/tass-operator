@@ -46,6 +46,14 @@ spec:
           type: object
         status:
           description: WorkflowRuntimeStatus defines the observed state of WorkflowRuntime
+          properties:
+            man:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              type: string
+          required:
+          - man
           type: object
       type: object
   version: v1alpha1

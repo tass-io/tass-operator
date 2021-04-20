@@ -9,7 +9,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -50,8 +52,19 @@ func DesiredWorkflowRuntime(namespace, name string) *serverlessv1alpha1.Workflow
 			Namespace: namespace,
 			Name:      name,
 		},
+		// TODO: Provide customization future
 		Spec: serverlessv1alpha1.WorkflowRuntimeSpec{
-			Replica: 2,
+			Replicas: 2,
+			Resources: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("1"),
+					corev1.ResourceMemory: resource.MustParse("2G"),
+				},
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("1"),
+					corev1.ResourceMemory: resource.MustParse("2G"),
+				},
+			},
 		},
 	}
 }
