@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,8 +26,6 @@ import (
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
 	"github.com/tass-io/tass-operator/pkg/spawn"
-
-	appsv1 "k8s.io/api/apps/v1"
 )
 
 // WorkflowRuntimeReconciler reconciles a WorkflowRuntime object
@@ -59,18 +56,9 @@ func (r *WorkflowRuntimeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 	if err := spawn.ReconcileNewService(r, req, r.Log, r.Scheme, &instance, labels); err != nil {
 		return ctrl.Result{}, err
 	}
-	if err := spawn.ReconcileNewDeployment(r, req, r.Log, r.Scheme, &instance, labels); err != nil {
+	if err := spawn.ReconcileNewDeployment(r, req, r.Log, r.Scheme, &instance, labels, instance.Spec.Replica); err != nil {
 		return ctrl.Result{}, err
 	}
-
-	// FIXME: An Example of getting info of Deployment
-	deploy := appsv1.Deployment{}
-	r.Get(ctx, req.NamespacedName, &deploy)
-	fmt.Println("---DEPLOYMENT INFO---")
-	fmt.Println(deploy.Namespace)
-	fmt.Println(deploy.Name)
-	fmt.Println(deploy.OwnerReferences)
-	fmt.Println("---------------------")
 
 	return ctrl.Result{}, nil
 }

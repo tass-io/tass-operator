@@ -11,15 +11,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+// ReconcileNewDeployment creates a new Deploy resource or updates an existing Deploy
 func ReconcileNewDeployment(
 	cli client.Client, req ctrl.Request,
 	l logr.Logger, s *runtime.Scheme,
 	i *serverlessv1alpha1.WorkflowRuntime,
-	labels map[string]string) error {
+	labels map[string]string, replicas int32) error {
 
 	ctx := context.Background()
 	log := l.WithValues("new deployment", req.NamespacedName)
@@ -30,24 +31,24 @@ func ReconcileNewDeployment(
 		return err
 	}
 
-	// try to see if the Deployment is already exists
-	if err := cli.Get(ctx, req.NamespacedName, &appsv1.Deployment{}); errors.IsNotFound(err) {
-		log.V(1).Info("Creating Deployment...")
-		if err := cli.Create(ctx, deploy); err != nil {
-			return err
-		}
-		// Successfully created a Deployment
-		log.V(1).Info("Deployment Created successfully", "name", deploy.Name)
+	// deployMutateFn is called regardless of creating or updating an object.
+	// If it's a `create` action, it creates a new resource, and the `replicas` is the default value
+	// If it's an `update` action, it updates the resource with the new `replicas`
+	deployMutateFn := func() error {
+		deploy.Spec.Replicas = &replicas
 		return nil
-	} else if err != nil {
-		log.Error(err, "Cannot create Deployment")
-		return err
-	} else {
-		log.V(1).Info("Deployment exists, no need to create a Deployment.")
 	}
+
+	operationResult, err := controllerutil.CreateOrUpdate(ctx, cli, deploy, deployMutateFn)
+	if err != nil {
+		log.Error(err, "Cannot create/update Deployment")
+		return err
+	}
+	log.V(1).Info("Deployment "+string(operationResult), "name", deploy.Name)
 	return nil
 }
 
+// DesiredDeployment returns a default config of a Service
 func DesiredDeployment(namespace, name string, labels map[string]string) *appsv1.Deployment {
 	selector := &metav1.LabelSelector{
 		MatchLabels: labels,

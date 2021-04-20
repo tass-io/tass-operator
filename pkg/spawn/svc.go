@@ -13,9 +13,11 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+// ReconcileNewService creates a new Service resource,
+// if the resource exists, it will ignore the request
 func ReconcileNewService(
 	cli client.Client, req ctrl.Request,
 	l logr.Logger, s *runtime.Scheme,
@@ -31,24 +33,17 @@ func ReconcileNewService(
 		return err
 	}
 
-	// try to see if the Service is already exists
-	if err := cli.Get(ctx, req.NamespacedName, &corev1.Service{}); errors.IsNotFound(err) {
-		log.V(1).Info("Creating Service...")
-		if err := cli.Create(ctx, svc); err != nil {
-			return err
-		}
-		// Successfully created a Service
-		log.V(1).Info("Service Created successfully", "name", svc.Name)
-		return nil
-	} else if err != nil {
-		log.Error(err, "Cannot create Service")
+	operationResult, err :=
+		controllerutil.CreateOrUpdate(ctx, cli, svc, func() error { return nil })
+	if err != nil {
+		log.Error(err, "Cannot create/update Service")
 		return err
-	} else {
-		log.V(1).Info("Service exists, no need to create a Service.")
 	}
+	log.V(1).Info("Service "+string(operationResult), "name", svc.Name)
 	return nil
 }
 
+// DesiredService returns a default config of a Service
 func DesiredService(namespace, name string, labels map[string]string) *corev1.Service {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

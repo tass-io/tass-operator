@@ -13,6 +13,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// ReconcileNewWorkflowRuntime creates a new Service resource,
+// if the resource exists, it will ignore the request
 func ReconcileNewWorkflowRuntime(
 	cli client.Client, req ctrl.Request,
 	l logr.Logger, s *runtime.Scheme,
@@ -28,7 +30,6 @@ func ReconcileNewWorkflowRuntime(
 
 	// try to see if the WorkflowRuntime is already exists
 	if err := cli.Get(ctx, req.NamespacedName, &serverlessv1alpha1.WorkflowRuntime{}); errors.IsNotFound(err) {
-		log.V(1).Info("Creating WorkflowRuntime...")
 		if err := cli.Create(ctx, wfrt); err != nil {
 			return err
 		}
@@ -38,17 +39,19 @@ func ReconcileNewWorkflowRuntime(
 	} else if err != nil {
 		log.Error(err, "Cannot create WorkflowRuntime")
 		return err
-	} else {
-		log.V(1).Info("WorkflowRuntime exists, no need to create a WorkflowRuntime.")
 	}
 	return nil
 }
 
+// DesiredWorkflowRuntime returns a default config of WorkflowRuntime resource
 func DesiredWorkflowRuntime(namespace, name string) *serverlessv1alpha1.WorkflowRuntime {
 	return &serverlessv1alpha1.WorkflowRuntime{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
 			Name:      name,
+		},
+		Spec: serverlessv1alpha1.WorkflowRuntimeSpec{
+			Replica: 2,
 		},
 	}
 }

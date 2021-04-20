@@ -28,6 +28,10 @@ type WorkflowRuntimeSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	// Replica defines the replication of the workflow runtime
+	// Specificly, it determines the replication of Pods in its Deployment
+	Replica int32 `json:"replica"`
+
 	// TODO: Add some fields
 }
 
@@ -35,10 +39,6 @@ type WorkflowRuntimeSpec struct {
 type WorkflowRuntimeStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	// Replica defines the replication of the workflow runtime
-	// Specificly, it determines the replication of Pods in its Deployment
-	Replica int `json:"replica"`
 }
 
 // +kubebuilder:object:root=true
