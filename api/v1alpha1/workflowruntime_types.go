@@ -56,14 +56,14 @@ type Instances map[string]Instance
 // Instance records some runtime info of a Pod
 // Specificly, it contains info about Function in the Pod and Pod metadata
 type Instance struct {
-	// Spec describes metadata a Pod has
-	Spec InstanceSpec `json:"status"`
+	// Status describes metadata a Pod has
+	Status InstanceStatus `json:"status"`
 	// ProcessRuntimes is a list of ProcessRuntime
 	ProcessRuntimes ProcessRuntimes `json:"processRuntimes"`
 }
 
-// InstanceSpec describes metadata a Pod has
-type InstanceSpec struct {
+// InstanceStatus describes metadata a Pod has
+type InstanceStatus struct {
 	// CreationTimestamp is a timestamp representing the time when this Pod was created.
 	CreationTimestamp metav1.Time `json:"creationTimestamp"`
 	// IP address of the host to which the pod is assigned. Empty if not yet scheduled.
