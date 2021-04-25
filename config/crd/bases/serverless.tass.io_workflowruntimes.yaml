@@ -36,24 +36,89 @@ spec:
         spec:
           description: WorkflowRuntimeSpec defines the desired state of WorkflowRuntime
           properties:
-            replica:
-              description: Replica defines the replication of the workflow runtime
+            replicas:
+              description: Replicas defines the replication of the workflow runtime
                 Specificly, it determines the replication of Pods in its Deployment
               format: int32
               type: integer
+            resources:
+              description: Resources defines the resource provided to the Pod
+              properties:
+                limits:
+                  additionalProperties:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  description: 'Limits describes the maximum amount of compute resources
+                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                  type: object
+                requests:
+                  additionalProperties:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  description: 'Requests describes the minimum amount of compute resources
+                    required. If Requests is omitted for a container, it defaults
+                    to Limits if that is explicitly specified, otherwise to an implementation-defined
+                    value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                  type: object
+              type: object
           required:
-          - replica
+          - replicas
+          - resources
           type: object
         status:
           description: WorkflowRuntimeStatus defines the observed state of WorkflowRuntime
           properties:
-            man:
-              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
-                of cluster Important: Run "make" to regenerate code after modifying
-                this file'
-              type: string
+            instances:
+              additionalProperties:
+                description: Instance records some runtime info of a Pod Specificly,
+                  it contains info about Function in the Pod and Pod metadata
+                properties:
+                  processRuntimes:
+                    additionalProperties:
+                      description: ProcessRuntime records the process runtime info
+                      properties:
+                        int:
+                          description: Number is the number the processes run the
+                            same Function
+                          type: integer
+                      required:
+                      - int
+                      type: object
+                    description: ProcessRuntimes is a list of ProcessRuntime
+                    type: object
+                  status:
+                    description: Spec describes metadata a Pod has
+                    properties:
+                      creationTimestamp:
+                        description: CreationTimestamp is a timestamp representing
+                          the time when this Pod was created.
+                        format: date-time
+                        type: string
+                      hostIP:
+                        description: IP address of the host to which the pod is assigned.
+                          Empty if not yet scheduled.
+                        type: string
+                      podIP:
+                        description: IP address allocated to the pod. Routable at
+                          least within the cluster. Empty if not yet allocated.
+                        type: string
+                    required:
+                    - creationTimestamp
+                    type: object
+                required:
+                - processRuntimes
+                - status
+                type: object
+              description: Instances is a Pod List that WorkflowRuntime Manages
+              type: object
           required:
-          - man
+          - instances
           type: object
       type: object
   version: v1alpha1
