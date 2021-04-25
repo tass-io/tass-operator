@@ -78,7 +78,7 @@ type ProcessRuntimes map[string]ProcessRuntime
 
 // ProcessRuntime records the process runtime info
 type ProcessRuntime struct {
-	// Number is the number the processes run the same Function
+	// Number is the number of the processes running the same Function
 	Number int `json:"int"`
 	// TODO: Add more fileds
 }
