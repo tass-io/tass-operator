@@ -52,7 +52,8 @@ type WorkflowRuntimeStatus struct {
 
 // Instances is a Pod List that WorkflowRuntime manages
 // When the Deployment created or updated, Instances should be updated
-type Instances []string
+// The key is the name of the Pod, for example "sample-c65c4f67-skbml"
+type Instances map[string]Instance
 
 // Instance records some runtime info of a Pod
 // Specificly, it contains info about Function in the Pod and Pod metadata
@@ -65,9 +66,6 @@ type Instance struct {
 
 // InstanceSpec describes metadata a Pod has
 type InstanceSpec struct {
-	// Name is the name of the Pod, for example "sample-c65c4f67-skbml"
-	// It must be unique in an Instance list
-	Name string `json:"name"`
 	// CreationTimestamp is a timestamp representing the time when this Pod was created.
 	CreationTimestamp time.Time `json:"creationTimestamp"`
 	// IP address of the host to which the pod is assigned. Empty if not yet scheduled.
@@ -77,12 +75,11 @@ type InstanceSpec struct {
 }
 
 // ProcessRuntimes is a list of ProcessRuntime
-type ProcessRuntimes []ProcessRuntime
+// The key is the name of the Function which is running in the Pod
+type ProcessRuntimes map[string]ProcessRuntime
 
 // ProcessRuntime records the process runtime info
 type ProcessRuntime struct {
-	// Name is the name of the Function which is runned
-	Name string `json:"name"`
 	// Number is the number the processes run the same Function
 	Number int `json:"int"`
 	// TODO: Add more fileds
