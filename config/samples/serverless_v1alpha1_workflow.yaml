@@ -3,23 +3,45 @@ kind: Workflow
 metadata:
   name: workflow-sample
 spec:
-  # Add fields here
   environment: Golang
-  domain: sail
   spec:
-  - name: flow-sample
-    function: function-sample
-    inputs:
-    - hi
-    - hey
+  - name: entrance
+    function: function1
     outputs:
-    - exit
-    - bye
+    - next
+    statement: direct
+  - name: next
+    function: function2
+    inputs:
+    - entrance
+    outputs:
+    - left
+    - right
     statement: switch
     condition:
-      type: string
+      type: int
       operator: eq
-      comparision: money
+      comparision: 5
       destination:
-        isTrue: [exit]
-        isFalse: [bye]
+        isTrue:
+        - left
+        isFalse:
+        - right
+  - name: left
+    function: function3
+    inputs:
+    - next
+    outputs:
+    - end
+    statement: direct
+  - name: end
+    function: function4
+    statement: direct
+    inputs:
+    - left
+  - name: right
+    function: function1
+    statement: direct
+    inputs:
+    - next
+    

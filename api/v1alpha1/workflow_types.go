@@ -59,8 +59,10 @@ type Flow struct {
 	// Function is the function name which has been defined in Tass
 	Function string `json:"function"`
 	// Inputs specify which flows need to complete before this flow can start
+	// +optional
 	Inputs []string `json:"inputs"`
 	// Outputs specify where the result of this flow should go
+	// +optional
 	Outputs []string `json:"outputs"`
 	// Statement shows the flow control logic type
 	// Valid values are:
@@ -152,7 +154,7 @@ type Comparision string
 type Destination struct {
 	// IsTrue defines the downstream Flows if the condition is satisfied
 	IsTrue []string `json:"isTrue"`
-	// IsFalse defines the downstream Flows if the condition is satisfied
+	// IsFalse defines the downstream Flows if the condition is not satisfied
 	IsFalse []string `json:"isFalse"`
 }
 
