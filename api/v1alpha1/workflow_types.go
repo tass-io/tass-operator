@@ -31,8 +31,12 @@ type WorkflowSpec struct {
 	// Spec is a list of Flows
 	Spec []Flow `json:"spec"`
 
+	// Env is the environment variables for the Workflow
+	// It is defined by users
+	// +optional
+	Env map[string]string `json:"env,omitempty"`
+
 	// TODO: Add more fields in the future
-	// TODO: Environment variables
 }
 
 // Environment defines the language environments that tass supports
@@ -63,7 +67,6 @@ type Flow struct {
 	// Valid values are:
 	// - direct: The result of the flow go to downstream directly;
 	// - switch: The result of the flow go to downstream based on the switch condition;
-	// - loop: The result of the flow go back to itself until the loop condition break;
 	Statement Statement `json:"statement"`
 	// Role is the role of the Flow
 	// Valid values are:
@@ -201,9 +204,6 @@ type Next struct {
 type WorkflowStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	// Status defined the observed state of workflow
-	Status string `json:"status"`
 }
 
 // +kubebuilder:object:root=true

@@ -73,7 +73,6 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	// TODO: This is just an example status
-	instance.Status.Status = "Running"
 	if err := r.Status().Update(ctx, &instance); err != nil {
 		log.Error(err, "unable to update status")
 	}

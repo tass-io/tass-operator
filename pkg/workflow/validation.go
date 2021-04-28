@@ -15,7 +15,7 @@ func ValidateFuncExist(wf *serverlessv1alpha1.Workflow, fl *serverlessv1alpha1.F
 	}
 	for _, flow := range wf.Spec.Spec {
 		if !domainFunctionMap[flow.Function] {
-			return errors.New("Function " + flow.Function + " not defined in namespace [" + wf.Namespace + "]")
+			return errors.New("function " + flow.Function + " not defined in namespace [" + wf.Namespace + "]")
 		}
 	}
 	return nil
@@ -34,7 +34,7 @@ func ValidateFlows(wf *serverlessv1alpha1.Workflow) error {
 	var hasExit bool
 	for i, flow := range wf.Spec.Spec {
 		if _, ok := flowMap[flow.Name]; ok {
-			return errors.New("Flow " + flow.Name + " has defined more than once")
+			return errors.New("flow " + flow.Name + " has defined more than once")
 		}
 		flowMap[flow.Name] = &wf.Spec.Spec[i]
 		// TODO: find Flow entrance
@@ -44,10 +44,10 @@ func ValidateFlows(wf *serverlessv1alpha1.Workflow) error {
 	}
 
 	if entrance == nil {
-		return errors.New("Flows has no entrance")
+		return errors.New("flows has no entrance")
 	}
 	if !hasExit {
-		return errors.New("Flows has no exit")
+		return errors.New("flows has no exit")
 	}
 
 	for _, flow := range wf.Spec.Spec {
@@ -63,9 +63,9 @@ func ValidateFlows(wf *serverlessv1alpha1.Workflow) error {
 			return nil
 		}
 
-		// TODO: More Conditions chec
+		// TODO: More Conditions check
 		if flow.Conditions == nil {
-			return errors.New("Condition should be defined when the Statement is not 'direct'")
+			return errors.New("condition should be defined when the Statement is not 'direct'")
 		}
 	}
 	return nil
