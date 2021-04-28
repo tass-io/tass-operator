@@ -37,13 +37,7 @@ func ValidateFlows(wf *serverlessv1alpha1.Workflow) error {
 			return errors.New("Flow " + flow.Name + " has defined more than once")
 		}
 		flowMap[flow.Name] = &wf.Spec.Spec[i]
-		// find Flow entrance
-		if len(flow.Inputs) == 0 {
-			if entrance != nil {
-				return errors.New("Flows has multi entrance")
-			}
-			entrance = &wf.Spec.Spec[i]
-		}
+		// TODO: find Flow entrance
 		if len(flow.Outputs) == 0 {
 			hasExit = true
 		}
@@ -57,12 +51,6 @@ func ValidateFlows(wf *serverlessv1alpha1.Workflow) error {
 	}
 
 	for _, flow := range wf.Spec.Spec {
-		// check inputs
-		for _, input := range flow.Inputs {
-			if _, ok := flowMap[input]; !ok {
-				return errors.New("Input " + input + " in Flow " + flow.Name + " has not define")
-			}
-		}
 		// check outputs
 		outputMap := map[string]bool{}
 		for _, output := range flow.Outputs {
@@ -75,19 +63,9 @@ func ValidateFlows(wf *serverlessv1alpha1.Workflow) error {
 			return nil
 		}
 
-		// check destination in condition
-		if flow.Condition == nil {
+		// TODO: More Conditions chec
+		if flow.Conditions == nil {
 			return errors.New("Condition should be defined when the Statement is not 'direct'")
-		}
-		for _, item := range flow.Condition.Destination.IsTrue {
-			if _, ok := outputMap[item]; !ok {
-				return errors.New("Destination " + item + " in Flow " + flow.Name + " has not define in its output")
-			}
-		}
-		for _, item := range flow.Condition.Destination.IsFalse {
-			if _, ok := outputMap[item]; !ok {
-				return errors.New("Destination " + item + " in Flow " + flow.Name + " has not define in its output")
-			}
 		}
 	}
 	return nil

@@ -36,90 +36,107 @@ spec:
         spec:
           description: WorkflowSpec defines the desired state of Workflow
           properties:
-            environment:
-              description: Environment represents the language environment of the
-                code segments
-              enum:
-              - Golang
-              - Python
-              - JavaScript
-              type: string
             spec:
               description: Spec is a list of Flows
               items:
                 description: Flow defines the logic of a Function in a workflow
                 properties:
-                  condition:
-                    description: Condition is the control logic of the flow Only worked
-                      when the Statement is 'Switch' or 'Loop'
-                    properties:
-                      comparision:
-                        description: Comparision is used to compare with the flow
-                          result
-                        type: string
-                      destination:
-                        description: Destination defines the downstream Flows based
-                          on the condition result
-                        properties:
-                          isFalse:
-                            description: IsFalse defines the downstream Flows if the
-                              condition is satisfied
-                            items:
-                              type: string
-                            type: array
-                          isTrue:
-                            description: IsTrue defines the downstream Flows if the
-                              condition is satisfied
-                            items:
-                              type: string
-                            type: array
-                        required:
-                        - isFalse
-                        - isTrue
-                        type: object
-                      operator:
-                        description: 'Operator defines the illegal operation in workflow
-                          condition statement Valid values are: - eq: The result is
-                          equal to the target - ne: The result is not equal to the
-                          target - lt: The result is less than the target - le: The
-                          result is less than or equal to the target - gt: The result
-                          is greater than the target - ge: The result is greater than
-                          or equal to the target.'
-                        enum:
-                        - eq
-                        - ne
-                        - lt
-                        - le
-                        - gt
-                        - ge
-                        type: string
-                      type:
-                        description: 'Type is the data type that Tass workflow condition
-                          support It also implicitly shows the result type of the
-                          flow Valid values are: - string: The condition type is string
-                          - int: The condition type is int - bool: The condition type
-                          is boolean'
-                        enum:
-                        - string
-                        - int
-                        - bool
-                        type: string
-                    required:
-                    - comparision
-                    - destination
-                    - operator
-                    - type
-                    type: object
+                  conditions:
+                    description: Conditions are the control logic group of the flow
+                      The first element of the Conditions is the root control logic
+                      Only worked when the Statement is 'Switch'
+                    items:
+                      description: Condition is the control logic of the flow
+                      properties:
+                        comparision:
+                          description: Comparision is used to compare with the flow
+                            result
+                          type: string
+                        destination:
+                          description: Destination defines the downstream Flows based
+                            on the condition result
+                          properties:
+                            isFalse:
+                              description: IsFalse defines the downstream Flows if
+                                the condition is not satisfied
+                              properties:
+                                conditions:
+                                  description: Condition lists the Condition where
+                                    the result of the current Flow goes It means that
+                                    the result needs more control logic check
+                                  items: {}
+                                  type: array
+                                flows:
+                                  description: Flows lists the Flows where the result
+                                    of the current Flow goes
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                            isTrue:
+                              description: IsTrue defines the downstream Flows if
+                                the condition is satisfied
+                              properties:
+                                conditions:
+                                  description: Condition lists the Condition where
+                                    the result of the current Flow goes It means that
+                                    the result needs more control logic check
+                                  items: {}
+                                  type: array
+                                flows:
+                                  description: Flows lists the Flows where the result
+                                    of the current Flow goes
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                          required:
+                          - isFalse
+                          - isTrue
+                          type: object
+                        name:
+                          description: Name is the name of a Condition, it's unique
+                            in a Condition group
+                          type: string
+                        operator:
+                          description: 'Operator defines the illegal operation in
+                            workflow condition statement Valid values are: - eq: The
+                            result is equal to the target - ne: The result is not
+                            equal to the target - lt: The result is less than the
+                            target - le: The result is less than or equal to the target
+                            - gt: The result is greater than the target - ge: The
+                            result is greater than or equal to the target.'
+                          enum:
+                          - eq
+                          - ne
+                          - lt
+                          - le
+                          - gt
+                          - ge
+                          type: string
+                        type:
+                          description: 'Type is the data type that Tass workflow condition
+                            support It also implicitly shows the result type of the
+                            flow Valid values are: - string: The condition type is
+                            string - int: The condition type is int - bool: The condition
+                            type is boolean'
+                          enum:
+                          - string
+                          - int
+                          - bool
+                          type: string
+                      required:
+                      - comparision
+                      - destination
+                      - name
+                      - operator
+                      - type
+                      type: object
+                    type: array
                   function:
                     description: Function is the function name which has been defined
                       in Tass
                     type: string
-                  inputs:
-                    description: Inputs specify which flows need to complete before
-                      this flow can start
-                    items:
-                      type: string
-                    type: array
                   name:
                     description: Name is the name of the flow which is unique in a
                       workflow. A function may be called multiple times in different
@@ -131,6 +148,17 @@ spec:
                     items:
                       type: string
                     type: array
+                  role:
+                    description: 'Role is the role of the Flow Valid values are: -
+                      start: The role of the Flow is "start" which means it is the
+                      entrance of workflow instance - end: The role of the Flow is
+                      "end" which means it is the exit point of workflow instance
+                      If no value is specified, it means this is an intermediate Flow
+                      instance'
+                    enum:
+                    - start
+                    - end
+                    type: string
                   statement:
                     description: 'Statement shows the flow control logic type Valid
                       values are: - direct: The result of the flow go to downstream
@@ -140,18 +168,14 @@ spec:
                     enum:
                     - direct
                     - switch
-                    - loop
                     type: string
                 required:
                 - function
-                - inputs
                 - name
-                - outputs
                 - statement
                 type: object
               type: array
           required:
-          - environment
           - spec
           type: object
         status:
