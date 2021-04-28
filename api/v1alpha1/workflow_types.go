@@ -125,6 +125,27 @@ type Condition struct {
 	// - gt: The result is greater than the target
 	// - ge: The result is greater than or equal to the target.
 	Operator OperatorType `json:"operator"`
+	// Target shows the specific data that the flow result uses to compare with
+	// The result of the flow can be a simple type like string, bool or int
+	// But it can also be a complex object contains some fileds
+	// Whatever the result is, the Flow runtime will wrap the result to a JSON object
+	// to unifiy the transmission process.
+	// 
+	// For example, the result of the user code is a string type, let's say "tass",
+	// and then it will be wrapped as a JSON object {"$": "tass"} as the result of the Flow.
+	// If the result of user code is not a simple type, it can be much more complex
+	// 
+	// For example, the Flow result can be {"$":{"name": "tass","type": "faas"}}
+	// So in this case, if we want to use the "type" property
+	// to compare with Comparision, the Target value should be "$.type"
+	// 
+	// If users don't specify the Target field,or the Target value is just "$",
+	// it means the user code result is just a simple type
+	// Otherwise, the user must provide a Target value to claim the property to use
+	// One more example to show how to get the key in Flow result
+	// Let's say the result is {"$":{"name":"tass","info":{"type":"fn","timeout":60}}}
+	// We want the "timeout" key, so the Target value is "$.info.timeout"
+	Target string `json:"target,omitempty"`
 	// Comparision is used to compare with the flow result
 	Comparision Comparision `json:"comparision"`
 	// Destination defines the downstream Flows based on the condition result

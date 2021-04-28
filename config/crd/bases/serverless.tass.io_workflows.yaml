@@ -36,6 +36,12 @@ spec:
         spec:
           description: WorkflowSpec defines the desired state of Workflow
           properties:
+            env:
+              additionalProperties:
+                type: string
+              description: Env is the environment variables for the Workflow It is
+                defined by users
+              type: object
             spec:
               description: Spec is a list of Flows
               items:
@@ -114,6 +120,29 @@ spec:
                           - gt
                           - ge
                           type: string
+                        target:
+                          description: "Target shows the specific data that the flow
+                            result uses to compare with The result of the flow can
+                            be a simple type like string, bool or int But it can also
+                            be a complex object contains some fileds Whatever the
+                            result is, the Flow runtime will wrap the result to a
+                            JSON object to unifiy the transmission process. \n For
+                            example, the result of the user code is a string type,
+                            let's say \"tass\", and then it will be wrapped as a JSON
+                            object {\"$\": \"tass\"} as the result of the Flow. If
+                            the result of user code is not a simple type, it can be
+                            much more complex \n For example, the Flow result can
+                            be {\"$\":{\"name\": \"tass\",\"type\": \"faas\"}} So
+                            in this case, if we want to use the \"type\" property
+                            to compare with Comparision, the Target value should be
+                            \"$.type\" \n If users don't specify the Target field,or
+                            the Target value is just \"$\", it means the user code
+                            result is just a simple type Otherwise, the user must
+                            provide a Target value to claim the property to use One
+                            more example to show how to get the key in Flow result
+                            Let's say the result is {\"$\":{\"name\":\"tass\",\"info\":{\"type\":\"fn\",\"timeout\":60}}}
+                            We want the \"timeout\" key, so the Target value is \"$.info.timeout\""
+                          type: string
                         type:
                           description: 'Type is the data type that Tass workflow condition
                             support It also implicitly shows the result type of the
@@ -163,8 +192,7 @@ spec:
                     description: 'Statement shows the flow control logic type Valid
                       values are: - direct: The result of the flow go to downstream
                       directly; - switch: The result of the flow go to downstream
-                      based on the switch condition; - loop: The result of the flow
-                      go back to itself until the loop condition break;'
+                      based on the switch condition;'
                     enum:
                     - direct
                     - switch
@@ -180,12 +208,6 @@ spec:
           type: object
         status:
           description: WorkflowStatus defines the observed state of Workflow
-          properties:
-            status:
-              description: Status defined the observed state of workflow
-              type: string
-          required:
-          - status
           type: object
       type: object
   version: v1alpha1
