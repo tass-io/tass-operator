@@ -84,8 +84,8 @@ spec:
                       description: ProcessRuntime records the process runtime info
                       properties:
                         int:
-                          description: Number is the number the processes run the
-                            same Function
+                          description: Number is the number of the processes running
+                            the same Function
                           type: integer
                       required:
                       - int
@@ -93,7 +93,7 @@ spec:
                     description: ProcessRuntimes is a list of ProcessRuntime
                     type: object
                   status:
-                    description: Spec describes metadata a Pod has
+                    description: Status describes metadata a Pod has
                     properties:
                       creationTimestamp:
                         description: CreationTimestamp is a timestamp representing

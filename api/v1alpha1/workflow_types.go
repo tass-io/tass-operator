@@ -28,13 +28,11 @@ type WorkflowSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Environment represents the language environment of the code segments
-	Environment Environment `json:"environment"`
-
 	// Spec is a list of Flows
 	Spec []Flow `json:"spec"`
 
 	// TODO: Add more fields in the future
+	// TODO: Environment variables
 }
 
 // Environment defines the language environments that tass supports
@@ -58,9 +56,6 @@ type Flow struct {
 	Name string `json:"name"`
 	// Function is the function name which has been defined in Tass
 	Function string `json:"function"`
-	// Inputs specify which flows need to complete before this flow can start
-	// +optional
-	Inputs []string `json:"inputs"`
 	// Outputs specify where the result of this flow should go
 	// +optional
 	Outputs []string `json:"outputs"`
@@ -70,14 +65,23 @@ type Flow struct {
 	// - switch: The result of the flow go to downstream based on the switch condition;
 	// - loop: The result of the flow go back to itself until the loop condition break;
 	Statement Statement `json:"statement"`
-	// Condition is the control logic of the flow
-	// Only worked when the Statement is 'Switch' or 'Loop'
+	// Role is the role of the Flow
+	// Valid values are:
+	// - start: The role of the Flow is "start" which means it is the entrance of workflow instance
+	// - end: The role of the Flow is "end" which means it is the exit point of workflow instance
+	// If no value is specified, it means this is an intermediate Flow instance
 	// +optional
-	Condition *Condition `json:"condition,omitempty"`
+	Role Role `json:"role,omitempty"`
+
+	// Conditions are the control logic group of the flow
+	// The first element of the Conditions is the root control logic
+	// Only worked when the Statement is 'Switch'
+	// +optional
+	Conditions []*Condition `json:"conditions,omitempty"`
 }
 
 // Statement shows the flow control logic type
-// +kubebuilder:validation:Enum=direct;switch;loop
+// +kubebuilder:validation:Enum=direct;switch
 type Statement string
 
 const (
@@ -85,12 +89,23 @@ const (
 	Direct Statement = "direct"
 	// Switch is the result of the flow go to downstream based on the switch condition;
 	Switch Statement = "switch"
-	// Loop is the result of the flow go back to itself until the loop condition break;
-	Loop Statement = "loop"
+)
+
+// Role is the role of the Flow
+// +kubebuilder:validation:Enum=start;end
+type Role string
+
+const (
+	// Start means the role of the Flow is "start" which means it is the entrance of workflow instance
+	Start Role = "start"
+	// End means the role of the Flow is "end" which means it is the exit point of workflow instance
+	End Role = "end"
 )
 
 // Condition is the control logic of the flow
 type Condition struct {
+	// Name is the name of a Condition, it's unique in a Condition group
+	Name string `json:"name"`
 	// Type is the data type that Tass workflow condition support
 	// It also implicitly shows the result type of the flow
 	// Valid values are:
@@ -151,11 +166,35 @@ const (
 type Comparision string
 
 // Destination defines the downstream Flows based on the condition result
+// When a Flow finishes its task, the result of the Flow goes to the downstream Flows
+// After passing a Condition, the Flows where result goes is determinated by Destination field
+// The result can go to the downstream Flows directly,
+// or it needs a new round of Conditions, or both.
+// Here is a sample of Destination:
+// ```yaml
+// destination:
+//	 isTrue:
+//	 	 flows:
+//	 	 - flow-a       # this is a Flow Name
+//		 - flow-b
+//	 isFalse:
+//	 	 conditions:
+//	   - condition-a  # this is a Condition name
+// ``
 type Destination struct {
 	// IsTrue defines the downstream Flows if the condition is satisfied
-	IsTrue []string `json:"isTrue"`
+	IsTrue Next `json:"isTrue"`
 	// IsFalse defines the downstream Flows if the condition is not satisfied
-	IsFalse []string `json:"isFalse"`
+	IsFalse Next `json:"isFalse"`
+}
+
+// Next shows the next Condition or Flows the data goes
+type Next struct {
+	// Flows lists the Flows where the result of the current Flow goes
+	Flows []string `json:"flows,omitempty"`
+	// Condition lists the Condition where the result of the current Flow goes
+	// It means that the result needs more control logic check
+	Conditions []*Condition `json:"conditions,omitempty"`
 }
 
 // WorkflowStatus defines the observed state of Workflow

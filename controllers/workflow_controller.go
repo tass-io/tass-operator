@@ -48,7 +48,6 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		log.Error(err, "unable to fetch Workflow")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	log.V(1).Info("The Workflow environment is", "environment", instance.Spec.Environment)
 	log.V(1).Info("The Workflow Spec is", "spec", instance.Spec.Spec)
 
 	// For example, we want to get the Function list...

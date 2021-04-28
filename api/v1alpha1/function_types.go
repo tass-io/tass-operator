@@ -28,6 +28,7 @@ type FunctionSpec struct {
 	// Environment represents the language environment of the code segments
 	// The scheduler wil then launch the corresponding language environment
 	Environment Environment `json:"environment"`
+	// TODO: Fields of ResourceRequirements
 }
 
 // FunctionStatus defines the observed state of Function
