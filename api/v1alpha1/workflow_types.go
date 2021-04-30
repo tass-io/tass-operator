@@ -72,6 +72,8 @@ type Flow struct {
 	// Valid values are:
 	// - start: The role of the Flow is "start" which means it is the entrance of workflow instance
 	// - end: The role of the Flow is "end" which means it is the exit point of workflow instance
+	// - orphan: The role of the Flow is "orphan" which is a special case that
+	// the workflow instance has only one function
 	// If no value is specified, it means this is an intermediate Flow instance
 	// +optional
 	Role Role `json:"role,omitempty"`
@@ -103,9 +105,30 @@ const (
 	Start Role = "start"
 	// End means the role of the Flow is "end" which means it is the exit point of workflow instance
 	End Role = "end"
+	// Orphan means the role of the Flow is "orphan" which is a special case that
+	// the workflow instance has only one function
+	Orphan Role = "orphan"
 )
 
 // Condition is the control logic of the flow
+// A sample of Condition
+// ```yaml
+// condition:
+// 	 name: root
+// 	 type: int
+// 	 operator: gt
+// 	 target: $.a
+// 	 comparision: 50
+// 	 destination:
+// 		 isTrue:  # ...
+// 		 isFalse: # ...
+// ```
+// It is same as:
+// if $.a >= 50 {
+// 	 goto isTrue logic
+// } else {
+// 	 goto isFalse logic
+// }
 type Condition struct {
 	// Name is the name of a Condition, it's unique in a Condition group
 	Name string `json:"name"`
@@ -130,15 +153,14 @@ type Condition struct {
 	// But it can also be a complex object contains some fileds
 	// Whatever the result is, the Flow runtime will wrap the result to a JSON object
 	// to unifiy the transmission process.
-	// 
 	// For example, the result of the user code is a string type, let's say "tass",
 	// and then it will be wrapped as a JSON object {"$": "tass"} as the result of the Flow.
+	//
 	// If the result of user code is not a simple type, it can be much more complex
-	// 
 	// For example, the Flow result can be {"$":{"name": "tass","type": "faas"}}
 	// So in this case, if we want to use the "type" property
 	// to compare with Comparision, the Target value should be "$.type"
-	// 
+	//
 	// If users don't specify the Target field,or the Target value is just "$",
 	// it means the user code result is just a simple type
 	// Otherwise, the user must provide a Target value to claim the property to use
@@ -147,6 +169,8 @@ type Condition struct {
 	// We want the "timeout" key, so the Target value is "$.info.timeout"
 	Target string `json:"target,omitempty"`
 	// Comparision is used to compare with the flow result
+	// Comparision can be a realistic value, like "cash", "5", "true"
+	// it can also be a property of the flow result, like "$.b"
 	Comparision Comparision `json:"comparision"`
 	// Destination defines the downstream Flows based on the condition result
 	Destination Destination `json:"destination"`
