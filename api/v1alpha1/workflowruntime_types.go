@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -32,9 +31,6 @@ type WorkflowRuntimeSpec struct {
 	// Replicas defines the replication of the workflow runtime
 	// Specificly, it determines the replication of Pods in its Deployment
 	Replicas int32 `json:"replicas"`
-
-	// Resources defines the resource provided to the Pod
-	Resources corev1.ResourceRequirements `json:"resources"`
 
 	// TODO: Add some fields
 }

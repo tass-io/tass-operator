@@ -28,7 +28,15 @@ type FunctionSpec struct {
 	// Environment represents the language environment of the code segments
 	// The scheduler wil then launch the corresponding language environment
 	Environment Environment `json:"environment"`
-	// TODO: Fields of ResourceRequirements
+	// Resource claims the resource provisioning for Function process
+	// It now contains cpu and memory
+	Resource Resource `json:"resource"`
+}
+
+// Resource claims the resource provisioning for Function process
+type Resource struct {
+	Cpu    string `json:"cpu"`
+	Memory string `json:"memory"`
 }
 
 // FunctionStatus defines the observed state of Function

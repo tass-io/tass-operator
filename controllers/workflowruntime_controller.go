@@ -57,7 +57,7 @@ func (r *WorkflowRuntimeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 		return ctrl.Result{}, err
 	}
 	if err := spawn.ReconcileNewDeployment(
-		r, req, r.Log, r.Scheme, &instance, labels, instance.Spec.Replicas, instance.Spec.Resources); err != nil {
+		r, req, r.Log, r.Scheme, &instance, labels, instance.Spec.Replicas); err != nil {
 		return ctrl.Result{}, err
 	}
 

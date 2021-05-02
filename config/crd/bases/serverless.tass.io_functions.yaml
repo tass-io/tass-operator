@@ -43,8 +43,21 @@ spec:
               - Python
               - JavaScript
               type: string
+            resource:
+              description: Resource claims the resource provisioning for Function
+                process It now contains cpu and memory
+              properties:
+                cpu:
+                  type: string
+                memory:
+                  type: string
+              required:
+              - cpu
+              - memory
+              type: object
           required:
           - environment
+          - resource
           type: object
         status:
           description: FunctionStatus defines the observed state of Function
