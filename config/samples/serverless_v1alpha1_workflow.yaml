@@ -3,45 +3,43 @@ kind: Workflow
 metadata:
   name: workflow-sample
 spec:
-  environment: Golang
+  env:
+    lang: CH
+    kind: cron
   spec:
   - name: entrance
     function: function1
     outputs:
     - next
     statement: direct
+    role: start
   - name: next
     function: function2
-    inputs:
-    - entrance
-    outputs:
-    - left
-    - right
     statement: switch
-    condition:
+    conditions:
+    - name: root
       type: int
       operator: eq
+      target: $
       comparision: 5
       destination:
         isTrue:
-        - left
+          flows:
+          - left
         isFalse:
-        - right
+          flows:
+          - right
   - name: left
     function: function3
-    inputs:
-    - next
     outputs:
     - end
     statement: direct
   - name: end
     function: function4
     statement: direct
-    inputs:
-    - left
+    role: end
   - name: right
     function: function1
     statement: direct
-    inputs:
-    - next
+    role: end
     

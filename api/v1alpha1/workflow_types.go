@@ -28,29 +28,16 @@ type WorkflowSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Spec is a list of Flows
-	Spec []Flow `json:"spec"`
-
 	// Env is the environment variables for the Workflow
 	// It is defined by users
 	// +optional
 	Env map[string]string `json:"env,omitempty"`
 
+	// Spec is a list of Flows
+	Spec []Flow `json:"spec"`
+
 	// TODO: Add more fields in the future
 }
-
-// Environment defines the language environments that tass supports
-// +kubebuilder:validation:Enum=Golang;Python;JavaScript
-type Environment string
-
-const (
-	// Golang means the language environment is Golang
-	Golang Environment = "Golang"
-	// Python means the language environment is Python
-	Python Environment = "Python"
-	// JavaScript means the language environment is JavaScript
-	JavaScript Environment = "JavaScript"
-)
 
 // Flow defines the logic of a Function in a workflow
 type Flow struct {

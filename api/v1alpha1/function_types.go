@@ -39,6 +39,19 @@ type Resource struct {
 	Memory string `json:"memory"`
 }
 
+// Environment defines the language environments that tass supports
+// +kubebuilder:validation:Enum=Golang;Python;JavaScript
+type Environment string
+
+const (
+	// Golang means the language environment is Golang
+	Golang Environment = "Golang"
+	// Python means the language environment is Python
+	Python Environment = "Python"
+	// JavaScript means the language environment is JavaScript
+	JavaScript Environment = "JavaScript"
+)
+
 // FunctionStatus defines the observed state of Function
 type FunctionStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
