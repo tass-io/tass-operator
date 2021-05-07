@@ -218,17 +218,21 @@ type Comparision string
 // ``
 type Destination struct {
 	// IsTrue defines the downstream Flows if the condition is satisfied
-	IsTrue Next `json:"isTrue"`
+	// +optional
+	IsTrue Next `json:"isTrue,omitempty"`
 	// IsFalse defines the downstream Flows if the condition is not satisfied
-	IsFalse Next `json:"isFalse"`
+	// +optional
+	IsFalse Next `json:"isFalse,omitempty"`
 }
 
 // Next shows the next Condition or Flows the data goes
 type Next struct {
 	// Flows lists the Flows where the result of the current Flow goes
+	// +optional
 	Flows []string `json:"flows,omitempty"`
 	// Condition lists the Condition where the result of the current Flow goes
 	// It means that the result needs more control logic check
+	// +optional
 	Conditions []*Condition `json:"conditions,omitempty"`
 }
 

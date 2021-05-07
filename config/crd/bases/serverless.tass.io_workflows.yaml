@@ -103,9 +103,6 @@ spec:
                                     type: string
                                   type: array
                               type: object
-                          required:
-                          - isFalse
-                          - isTrue
                           type: object
                         name:
                           description: Name is the name of a Condition, it's unique
