@@ -1,0 +1,12 @@
+# This file defines the Kubernetes objects necessary for Tass to run within Kubernetes.
+#
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tass-operator
+  labels:
+    app: tass-operator
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list", "create", "update", "patch", "delete"]

@@ -48,7 +48,7 @@ func ReconcileNewDeployment(
 	return nil
 }
 
-// DesiredDeployment returns a default config of a Service
+// DesiredDeployment returns a default config of a Deployment
 func DesiredDeployment(namespace, name string, labels map[string]string,
 	replicas int32) *appsv1.Deployment {
 	selector := &metav1.LabelSelector{
