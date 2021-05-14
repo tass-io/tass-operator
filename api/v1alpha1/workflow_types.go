@@ -69,7 +69,7 @@ type Flow struct {
 	// The first element of the Conditions is the root control logic
 	// Only worked when the Statement is 'Switch'
 	// +optional
-	Conditions []*Condition `json:"conditions,omitempty"`
+	Conditions []string `json:"conditions,omitempty"`
 }
 
 // Statement shows the flow control logic type
