@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
-	"github.com/tass-io/tass-operator/pkg/spawn"
+	"github.com/tass-io/tass-operator/pkg/workflowruntime"
 )
 
 // WorkflowRuntimeReconciler reconciles a WorkflowRuntime object
@@ -42,26 +42,28 @@ func (r *WorkflowRuntimeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 	ctx := context.Background()
 	log := r.Log.WithValues("workflowruntime", req.NamespacedName)
 
-	var instance serverlessv1alpha1.WorkflowRuntime
-	if err := r.Get(ctx, req.NamespacedName, &instance); err != nil {
+	var original serverlessv1alpha1.WorkflowRuntime
+	if err := r.Get(ctx, req.NamespacedName, &original); err != nil {
 		log.Error(err, "unable to fetch WorkflowRuntime")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// A Workflow has its WorkflowRuntime which run Functions in Workflow when a request comes
+	// A WorkflowRuntime has its Service and Deployment which
+	// run local scheduler and Flows in Workflow when a request comes
 	labels := map[string]string{
 		"type": "workflowRuntime",
 		"name": req.NamespacedName.Name,
 	}
-	if err := spawn.ReconcileNewService(r, req, r.Log, r.Scheme, &instance, labels); err != nil {
+	instance := original.DeepCopy()
+	wfrtr, err := workflowruntime.NewReconciler(r.Client, r.Log, r.Scheme, instance, labels)
+	if err != nil {
 		return ctrl.Result{}, err
 	}
-	if err := spawn.ReconcileNewDeployment(
-		r, req, r.Log, r.Scheme, &instance, labels, instance.Spec.Replicas); err != nil {
+	if err := wfrtr.Reconcile(); err != nil {
 		return ctrl.Result{}, err
 	}
-
 	return ctrl.Result{}, nil
+
 }
 
 func (r *WorkflowRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {

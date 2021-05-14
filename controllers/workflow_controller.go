@@ -25,7 +25,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
-	"github.com/tass-io/tass-operator/pkg/spawn"
 	"github.com/tass-io/tass-operator/pkg/workflow"
 )
 
@@ -43,14 +42,13 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("workflow", req.NamespacedName)
 
-	var instance serverlessv1alpha1.Workflow
-	if err := r.Get(ctx, req.NamespacedName, &instance); err != nil {
+	var original serverlessv1alpha1.Workflow
+	if err := r.Get(ctx, req.NamespacedName, &original); err != nil {
 		log.Error(err, "unable to fetch Workflow")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	log.V(1).Info("The Workflow Spec is", "spec", instance.Spec.Spec)
+	log.V(1).Info("The Workflow Spec is", "spec", original.Spec.Spec)
 
-	// For example, we want to get the Function list...
 	var functionList serverlessv1alpha1.FunctionList
 	if err := r.List(ctx, &functionList, client.InNamespace(req.Namespace)); err != nil {
 		log.Error(err, "unable to list child Functions")
@@ -59,13 +57,13 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	// TODO: This kind of check should be placed in the admission webhook
 	// Put here temporarily
-	if err := workflow.ValidateFuncExist(&instance, &functionList); err != nil {
+	if err := workflow.ValidateFuncExist(&original, &functionList); err != nil {
 		log.Error(err, "Workflow validation error")
 		// TODO: The webhook should ABORT directly
 		// Here we simply pass the check
 		// return ctrl.Result{}, nil
 	}
-	if err := workflow.ValidateFlows(&instance); err != nil {
+	if err := workflow.ValidateFlows(&original); err != nil {
 		log.Error(err, "Workflow validation error")
 		// TODO: The webhook should ABORT directly
 		// Here we simply pass the check
@@ -73,15 +71,19 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	// TODO: This is just an example status
-	if err := r.Status().Update(ctx, &instance); err != nil {
+	if err := r.Status().Update(ctx, &original); err != nil {
 		log.Error(err, "unable to update status")
 	}
 
 	// A Workflow has its WorkflowRuntime which run Functions in Workflow when a request comes
-	if err := spawn.ReconcileNewWorkflowRuntime(r, req, r.Log, r.Scheme, &instance); err != nil {
+	instance := original.DeepCopy()
+	wfr, err := workflow.NewReconciler(r.Client, r.Log, r.Scheme, instance)
+	if err != nil {
 		return ctrl.Result{}, err
 	}
-
+	if err := wfr.Reconcile(); err != nil {
+		return ctrl.Result{}, err
+	}
 	return ctrl.Result{}, nil
 }
 
