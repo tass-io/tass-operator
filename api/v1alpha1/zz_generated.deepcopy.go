@@ -67,8 +67,14 @@ func (in *Flow) DeepCopyInto(out *Flow) {
 	}
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
-		*out = make([]string, len(*in))
-		copy(*out, *in)
+		*out = make([]*Condition, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(Condition)
+				(*in).DeepCopyInto(*out)
+			}
+		}
 	}
 }
 
@@ -242,14 +248,8 @@ func (in *Next) DeepCopyInto(out *Next) {
 	}
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
-		*out = make([]*Condition, len(*in))
-		for i := range *in {
-			if (*in)[i] != nil {
-				in, out := &(*in)[i], &(*out)[i]
-				*out = new(Condition)
-				(*in).DeepCopyInto(*out)
-			}
-		}
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 }
 

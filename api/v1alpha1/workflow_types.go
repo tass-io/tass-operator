@@ -69,7 +69,7 @@ type Flow struct {
 	// The first element of the Conditions is the root control logic
 	// Only worked when the Statement is 'Switch'
 	// +optional
-	Conditions []string `json:"conditions,omitempty"`
+	Conditions []*Condition `json:"conditions,omitempty"`
 }
 
 // Statement shows the flow control logic type
@@ -233,7 +233,7 @@ type Next struct {
 	// Condition lists the Condition where the result of the current Flow goes
 	// It means that the result needs more control logic check
 	// +optional
-	Conditions []*Condition `json:"conditions,omitempty"`
+	Conditions []string `json:"conditions,omitempty"`
 }
 
 // WorkflowStatus defines the observed state of Workflow
