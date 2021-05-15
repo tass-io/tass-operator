@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	defaultClusterRole = "tass-operator"
+	defaultRole = "tass-operator"
 )
 
 type generator struct {
@@ -108,12 +108,12 @@ func (g generator) desiredServiceAccount() *corev1.ServiceAccount {
 	return sa
 }
 
-// desiredRoleBinding binds a ServiceAccount and a ClusterRole
+// desiredRoleBinding binds a ServiceAccount and a Role
 // Each Deployment has a ServiceAccount
-// ClusterRole has pre-defined in `hack/prepare.yaml`
-func (g generator) desiredRoleBinding(sa *corev1.ServiceAccount) *rbacv1.ClusterRoleBinding {
-	// ClusterRoleBinding and ServiceAccount use same Namespace and Name naming
-	crb := &rbacv1.ClusterRoleBinding{
+// Role has pre-defined in `hack/prepare.yaml`
+func (g generator) desiredRoleBinding(sa *corev1.ServiceAccount) *rbacv1.RoleBinding {
+	// RoleBinding and ServiceAccount use same Namespace and Name naming
+	crb := &rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: g.workflowruntime.Namespace,
 			Name:      g.workflowruntime.Name,
@@ -127,8 +127,8 @@ func (g generator) desiredRoleBinding(sa *corev1.ServiceAccount) *rbacv1.Cluster
 			},
 		},
 		RoleRef: rbacv1.RoleRef{
-			Kind:     "ClusterRole",
-			Name:     defaultClusterRole,
+			Kind:     "Role",
+			Name:     defaultRole,
 			APIGroup: "rbac.authorization.k8s.io",
 		},
 	}

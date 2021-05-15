@@ -140,7 +140,7 @@ func (r Reconciler) reconcileDeployment(serviceAccountName string) error {
 		Namespace: r.instance.Namespace,
 		Name:      r.instance.Name,
 	}
-	log := r.log.WithValues("new deployment", namespacedName)
+	log := r.log.WithValues("deployment", namespacedName)
 
 	deploy := r.gen.desiredDeploymentWithServiceAccount(serviceAccountName)
 	if err := ctrl.SetControllerReference(r.instance, deploy, r.scheme); err != nil {
