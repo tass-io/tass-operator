@@ -56,12 +56,12 @@ spec:
                     additionalProperties:
                       description: ProcessRuntime records the process runtime info
                       properties:
-                        int:
+                        number:
                           description: Number is the number of the processes running
                             the same Function
                           type: integer
                       required:
-                      - int
+                      - number
                       type: object
                     description: ProcessRuntimes is a list of ProcessRuntime
                     type: object
