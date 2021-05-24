@@ -84,7 +84,7 @@ const (
 )
 
 // Role is the role of the Flow
-// +kubebuilder:validation:Enum=start;end
+// +kubebuilder:validation:Enum=start;end;orphan
 type Role string
 
 const (

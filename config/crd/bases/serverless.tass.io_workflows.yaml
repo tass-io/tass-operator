@@ -193,6 +193,7 @@ spec:
                     enum:
                     - start
                     - end
+                    - orphan
                     type: string
                   statement:
                     description: 'Statement shows the flow control logic type Valid
