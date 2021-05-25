@@ -30,7 +30,7 @@ func (g generator) desiredWorkflowRuntime() *serverlessv1alpha1.WorkflowRuntime 
 			Name:      g.workflow.Name,
 		},
 		// TODO: Provide customization future
-		Spec: serverlessv1alpha1.WorkflowRuntimeSpec{
+		Spec: &serverlessv1alpha1.WorkflowRuntimeSpec{
 			Replicas: &replicas,
 		},
 	}

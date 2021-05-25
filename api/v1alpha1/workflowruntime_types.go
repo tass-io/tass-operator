@@ -87,8 +87,8 @@ type WorkflowRuntime struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   WorkflowRuntimeSpec   `json:"spec,omitempty"`
-	Status WorkflowRuntimeStatus `json:"status,omitempty"`
+	Spec   *WorkflowRuntimeSpec   `json:"spec,omitempty"`
+	Status *WorkflowRuntimeStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
