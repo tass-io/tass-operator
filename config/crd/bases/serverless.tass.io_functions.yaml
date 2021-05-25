@@ -48,20 +48,12 @@ spec:
                 process It now contains cpu and memory
               properties:
                 cpu:
-                  anyOf:
-                  - type: integer
-                  - type: string
                   description: CPU, in cores. (500m = .5 cores)
-                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                  x-kubernetes-int-or-string: true
+                  type: string
                 memory:
-                  anyOf:
-                  - type: integer
-                  - type: string
                   description: Memory, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024
                     * 1024)
-                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                  x-kubernetes-int-or-string: true
+                  type: string
               required:
               - cpu
               - memory

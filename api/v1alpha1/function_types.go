@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -37,9 +36,9 @@ type FunctionSpec struct {
 // Resource claims the resource provisioning for Function process
 type Resource struct {
 	// CPU, in cores. (500m = .5 cores)
-	ResourceCPU resource.Quantity `json:"cpu"`
+	ResourceCPU string `json:"cpu"`
 	// Memory, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)
-	ResourceMemory resource.Quantity `json:"memory"`
+	ResourceMemory string `json:"memory"`
 }
 
 // Environment defines the language environments that tass supports
