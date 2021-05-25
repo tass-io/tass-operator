@@ -188,13 +188,9 @@ func (in *Instance) DeepCopyInto(out *Instance) {
 	}
 	if in.ProcessRuntimes != nil {
 		in, out := &in.ProcessRuntimes, &out.ProcessRuntimes
-		*out = new(map[string]ProcessRuntime)
-		if **in != nil {
-			in, out := *in, *out
-			*out = make(map[string]ProcessRuntime, len(*in))
-			for key, val := range *in {
-				(*out)[key] = val
-			}
+		*out = make(ProcessRuntimes, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
 		}
 	}
 }
@@ -480,13 +476,9 @@ func (in *WorkflowRuntimeStatus) DeepCopyInto(out *WorkflowRuntimeStatus) {
 	*out = *in
 	if in.Instances != nil {
 		in, out := &in.Instances, &out.Instances
-		*out = new(map[string]Instance)
-		if **in != nil {
-			in, out := *in, *out
-			*out = make(map[string]Instance, len(*in))
-			for key, val := range *in {
-				(*out)[key] = *val.DeepCopy()
-			}
+		*out = make(Instances, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
 		}
 	}
 }

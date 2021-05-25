@@ -41,7 +41,7 @@ type WorkflowRuntimeStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Instances is a Pod List that WorkflowRuntime Manages
-	Instances *Instances `json:"instances"`
+	Instances Instances `json:"instances"`
 }
 
 // Instances is a Pod List that WorkflowRuntime manages
@@ -55,7 +55,7 @@ type Instance struct {
 	// Status describes metadata a Pod has
 	Status *InstanceStatus `json:"status"`
 	// ProcessRuntimes is a list of ProcessRuntime
-	ProcessRuntimes *ProcessRuntimes `json:"processRuntimes"`
+	ProcessRuntimes ProcessRuntimes `json:"processRuntimes"`
 }
 
 // InstanceStatus describes metadata a Pod has

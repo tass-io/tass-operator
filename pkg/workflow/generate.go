@@ -23,6 +23,7 @@ func newGenerator(wf *serverlessv1alpha1.Workflow) (*generator, error) {
 
 // desiredWorkflowRuntime returns a default config of WorkflowRuntime resource
 func (g generator) desiredWorkflowRuntime() *serverlessv1alpha1.WorkflowRuntime {
+	replicas := int32(2)
 	return &serverlessv1alpha1.WorkflowRuntime{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: g.workflow.Namespace,
@@ -30,7 +31,7 @@ func (g generator) desiredWorkflowRuntime() *serverlessv1alpha1.WorkflowRuntime 
 		},
 		// TODO: Provide customization future
 		Spec: serverlessv1alpha1.WorkflowRuntimeSpec{
-			Replicas: 2,
+			Replicas: &replicas,
 		},
 	}
 }
