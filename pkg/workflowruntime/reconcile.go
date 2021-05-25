@@ -151,7 +151,7 @@ func (r Reconciler) reconcileDeployment(serviceAccountName string) error {
 	// If it's a `create` action, it creates a new resource, and the `replicas` is the default value
 	// If it's an `update` action, it updates the resource with the new `replicas`
 	deployMutateFn := func() error {
-		deploy.Spec.Replicas = &r.instance.Spec.Replicas
+		deploy.Spec.Replicas = r.instance.Spec.Replicas
 		return nil
 	}
 

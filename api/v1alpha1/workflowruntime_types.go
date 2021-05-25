@@ -30,7 +30,7 @@ type WorkflowRuntimeSpec struct {
 
 	// Replicas defines the replication of the workflow runtime
 	// Specificly, it determines the replication of Pods in its Deployment
-	Replicas int32 `json:"replicas"`
+	Replicas *int32 `json:"replicas"`
 
 	// TODO: Add some fields
 }
@@ -41,7 +41,7 @@ type WorkflowRuntimeStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Instances is a Pod List that WorkflowRuntime Manages
-	Instances Instances `json:"instances"`
+	Instances *Instances `json:"instances"`
 }
 
 // Instances is a Pod List that WorkflowRuntime manages
@@ -53,19 +53,19 @@ type Instances map[string]Instance
 // Specificly, it contains info about Function in the Pod and Pod metadata
 type Instance struct {
 	// Status describes metadata a Pod has
-	Status InstanceStatus `json:"status"`
+	Status *InstanceStatus `json:"status"`
 	// ProcessRuntimes is a list of ProcessRuntime
-	ProcessRuntimes ProcessRuntimes `json:"processRuntimes"`
+	ProcessRuntimes *ProcessRuntimes `json:"processRuntimes"`
 }
 
 // InstanceStatus describes metadata a Pod has
 type InstanceStatus struct {
 	// CreationTimestamp is a timestamp representing the time when this Pod was created.
-	CreationTimestamp metav1.Time `json:"creationTimestamp"`
+	CreationTimestamp *metav1.Time `json:"creationTimestamp"`
 	// IP address of the host to which the pod is assigned. Empty if not yet scheduled.
-	HostIP string `json:"hostIP,omitempty"`
+	HostIP *string `json:"hostIP,omitempty"`
 	// IP address allocated to the pod. Routable at least within the cluster. Empty if not yet allocated.
-	PodIP string `json:"podIP,omitempty"`
+	PodIP *string `json:"podIP,omitempty"`
 }
 
 // ProcessRuntimes is a list of ProcessRuntime

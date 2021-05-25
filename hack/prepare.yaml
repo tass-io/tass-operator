@@ -15,5 +15,5 @@ rules:
   resources: ["workflowruntimes"]
   verbs: ["get", "watch", "list", "create", "update", "patch", "delete"]
 - apiGroups: ["serverless.tass.io"]
-  resources: ["workflows"]
+  resources: ["workflows", "functions"]
   verbs: ["get", "watch", "list"]

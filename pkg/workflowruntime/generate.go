@@ -13,6 +13,10 @@ import (
 
 const (
 	defaultRole = "tass-operator"
+	// local scheduler image info
+	imageName     = "registry.cn-hangzhou.aliyuncs.com/tass/local-scheduler"
+	imageVersion  = "v0.1.1"
+	containerPort = 8080
 )
 
 type generator struct {
@@ -45,10 +49,10 @@ func (g generator) desiredService() *corev1.Service {
 			Ports: []corev1.ServicePort{
 				{
 					Protocol: "TCP",
-					Port:     80,
+					Port:     8080,
 					TargetPort: intstr.IntOrString{
 						Type:   0,
-						IntVal: 80,
+						IntVal: 8080,
 					},
 				},
 			},
@@ -58,6 +62,7 @@ func (g generator) desiredService() *corev1.Service {
 
 // desiredDeploymentWithServiceAccount returns a default config of a Deployment
 func (g generator) desiredDeploymentWithServiceAccount(sa string) *appsv1.Deployment {
+	trueFlag := true
 	selector := &metav1.LabelSelector{
 		MatchLabels: g.labels,
 	}
@@ -69,22 +74,25 @@ func (g generator) desiredDeploymentWithServiceAccount(sa string) *appsv1.Deploy
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: selector,
-			Replicas: &g.workflowruntime.Spec.Replicas,
+			Replicas: g.workflowruntime.Spec.Replicas,
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: g.labels,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: sa,
-					// TODO: replace it with real local scheduler
 					Containers: []corev1.Container{
 						{
-							Name:  "httpbin",
-							Image: "kennethreitz/httpbin",
+							Name:  "scheduler",
+							Image: imageName + ":" + imageVersion,
 							Ports: []corev1.ContainerPort{{
-								ContainerPort: 80,
+								ContainerPort: containerPort,
 								Protocol:      "TCP",
 							}},
+							// Args: []string{"-m"},
+							SecurityContext: &corev1.SecurityContext{
+								Privileged: &trueFlag,
+							},
 						},
 					},
 				},
