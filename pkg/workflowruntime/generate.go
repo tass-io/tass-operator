@@ -15,7 +15,7 @@ const (
 	defaultRole = "tass-operator"
 	// local scheduler image info
 	imageName          = "registry.cn-hangzhou.aliyuncs.com/tass/local-scheduler"
-	imageVersion       = "v0.1.5"
+	imageVersion       = "v0.1.7"
 	containerPort      = 8080
 	storeServerAddress = "100.92.53.83"
 	storeServerPort    = "6379"

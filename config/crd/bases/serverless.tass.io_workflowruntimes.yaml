@@ -76,14 +76,9 @@ spec:
                               at least within the cluster. Empty if not yet allocated.
                             type: string
                         type: object
-                    required:
-                    - processRuntimes
-                    - status
                     type: object
                   description: Instances is a Pod List that WorkflowRuntime Manages
                   type: object
-              required:
-              - instances
               type: object
           type: object
         status:

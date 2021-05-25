@@ -38,6 +38,7 @@ type WorkflowRuntimeSpec struct {
 	// FIXME: Here we add status in Spec, logically put them into Status are resonable
 	// However, we don't find a solution of patching the Status by client side
 	// so we put all the status in Spec temporarily, maybe fix it future
+	// +optional
 	Status *WfrtStatus `json:"status,omitempty"`
 }
 
@@ -45,6 +46,7 @@ type WorkflowRuntimeSpec struct {
 // Now put this field into Spec to patch the status
 type WfrtStatus struct {
 	// Instances is a Pod List that WorkflowRuntime Manages
+	// +optional
 	Instances Instances `json:"instances"`
 }
 
@@ -64,8 +66,10 @@ type Instances map[string]Instance
 // Specificly, it contains info about Function in the Pod and Pod metadata
 type Instance struct {
 	// Status describes metadata a Pod has
+	// +optional
 	Status *InstanceStatus `json:"status"`
 	// ProcessRuntimes is a list of ProcessRuntime
+	// +optional
 	ProcessRuntimes ProcessRuntimes `json:"processRuntimes"`
 }
 
@@ -95,7 +99,9 @@ type WorkflowRuntime struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   *WorkflowRuntimeSpec  `json:"spec,omitempty"`
+	// +optional
+	Spec *WorkflowRuntimeSpec `json:"spec,omitempty"`
+	// +optional
 	Status WorkflowRuntimeStatus `json:"status,omitempty"`
 }
 
