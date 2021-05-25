@@ -15,8 +15,6 @@ spec:
     plural: workflowruntimes
     singular: workflowruntime
   scope: Namespaced
-  subresources:
-    status: {}
   validation:
     openAPIV3Schema:
       description: WorkflowRuntime is the Schema for the workflowruntimes API
@@ -41,50 +39,57 @@ spec:
                 Specificly, it determines the replication of Pods in its Deployment
               format: int32
               type: integer
+            status:
+              description: 'FIXME: Here we add status in Spec, logically put them
+                into Status are resonable However, we don''t find a solution of patching
+                the Status by client side so we put all the status in Spec temporarily,
+                maybe fix it future'
+              properties:
+                instances:
+                  additionalProperties:
+                    description: Instance records some runtime info of a Pod Specificly,
+                      it contains info about Function in the Pod and Pod metadata
+                    properties:
+                      processRuntimes:
+                        additionalProperties:
+                          description: ProcessRuntime records the process runtime
+                            info
+                          properties:
+                            number:
+                              description: Number is the number of the processes running
+                                the same Function
+                              type: integer
+                          required:
+                          - number
+                          type: object
+                        description: ProcessRuntimes is a list of ProcessRuntime
+                        type: object
+                      status:
+                        description: Status describes metadata a Pod has
+                        properties:
+                          hostIP:
+                            description: IP address of the host to which the pod is
+                              assigned. Empty if not yet scheduled.
+                            type: string
+                          podIP:
+                            description: IP address allocated to the pod. Routable
+                              at least within the cluster. Empty if not yet allocated.
+                            type: string
+                        type: object
+                    required:
+                    - processRuntimes
+                    - status
+                    type: object
+                  description: Instances is a Pod List that WorkflowRuntime Manages
+                  type: object
+              required:
+              - instances
+              type: object
           required:
           - replicas
           type: object
         status:
           description: WorkflowRuntimeStatus defines the observed state of WorkflowRuntime
-          properties:
-            instances:
-              additionalProperties:
-                description: Instance records some runtime info of a Pod Specificly,
-                  it contains info about Function in the Pod and Pod metadata
-                properties:
-                  processRuntimes:
-                    additionalProperties:
-                      description: ProcessRuntime records the process runtime info
-                      properties:
-                        number:
-                          description: Number is the number of the processes running
-                            the same Function
-                          type: integer
-                      required:
-                      - number
-                      type: object
-                    description: ProcessRuntimes is a list of ProcessRuntime
-                    type: object
-                  status:
-                    description: Status describes metadata a Pod has
-                    properties:
-                      hostIP:
-                        description: IP address of the host to which the pod is assigned.
-                          Empty if not yet scheduled.
-                        type: string
-                      podIP:
-                        description: IP address allocated to the pod. Routable at
-                          least within the cluster. Empty if not yet allocated.
-                        type: string
-                    type: object
-                required:
-                - processRuntimes
-                - status
-                type: object
-              description: Instances is a Pod List that WorkflowRuntime Manages
-              type: object
-          required:
-          - instances
           type: object
       type: object
   version: v1alpha1

@@ -33,6 +33,18 @@ type WorkflowRuntimeSpec struct {
 	Replicas *int32 `json:"replicas"`
 
 	// TODO: Add some fields
+
+	// FIXME: Here we add status in Spec, logically put them into Status are resonable
+	// However, we don't find a solution of patching the Status by client side
+	// so we put all the status in Spec temporarily, maybe fix it future
+	Status *WfrtStatus `json:"status,omitempty"`
+}
+
+// WfrtStatus defines the observed state of WorkflowRuntime
+// Now put this field into Spec to patch the status
+type WfrtStatus struct {
+	// Instances is a Pod List that WorkflowRuntime Manages
+	Instances Instances `json:"instances"`
 }
 
 // WorkflowRuntimeStatus defines the observed state of WorkflowRuntime
@@ -40,8 +52,6 @@ type WorkflowRuntimeStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Instances is a Pod List that WorkflowRuntime Manages
-	Instances Instances `json:"instances"`
 }
 
 // Instances is a Pod List that WorkflowRuntime manages
@@ -78,15 +88,14 @@ type ProcessRuntime struct {
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
 
 // WorkflowRuntime is the Schema for the workflowruntimes API
 type WorkflowRuntime struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   *WorkflowRuntimeSpec   `json:"spec,omitempty"`
-	Status *WorkflowRuntimeStatus `json:"status,omitempty"`
+	Spec   *WorkflowRuntimeSpec  `json:"spec,omitempty"`
+	Status WorkflowRuntimeStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
