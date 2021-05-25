@@ -31,7 +31,7 @@ type WorkflowRuntimeSpec struct {
 	// Replicas defines the replication of the workflow runtime
 	// Specificly, it determines the replication of Pods in its Deployment
 	// +optional
-	Replicas *int32 `json:"replicas"`
+	Replicas *int32 `json:"replicas,omitempty"`
 
 	// TODO: Add some fields
 
@@ -39,7 +39,7 @@ type WorkflowRuntimeSpec struct {
 	// However, we don't find a solution of patching the Status by client side
 	// so we put all the status in Spec temporarily, maybe fix it future
 	// +optional
-	Status *WfrtStatus `json:"status,omitempty"`
+	Status WfrtStatus `json:"status,omitempty"`
 }
 
 // WfrtStatus defines the observed state of WorkflowRuntime
@@ -67,10 +67,10 @@ type Instances map[string]Instance
 type Instance struct {
 	// Status describes metadata a Pod has
 	// +optional
-	Status *InstanceStatus `json:"status"`
+	Status *InstanceStatus `json:"status,omitempty"`
 	// ProcessRuntimes is a list of ProcessRuntime
 	// +optional
-	ProcessRuntimes ProcessRuntimes `json:"processRuntimes"`
+	ProcessRuntimes ProcessRuntimes `json:"processRuntimes,omitempty"`
 }
 
 // InstanceStatus describes metadata a Pod has
