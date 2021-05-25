@@ -14,9 +14,11 @@ import (
 const (
 	defaultRole = "tass-operator"
 	// local scheduler image info
-	imageName     = "registry.cn-hangzhou.aliyuncs.com/tass/local-scheduler"
-	imageVersion  = "v0.1.1"
-	containerPort = 8080
+	imageName          = "registry.cn-hangzhou.aliyuncs.com/tass/local-scheduler"
+	imageVersion       = "v0.1.5"
+	containerPort      = 8080
+	storeServerAddress = "100.92.53.83"
+	storeServerPort    = "6379"
 )
 
 type generator struct {
@@ -89,7 +91,7 @@ func (g generator) desiredDeploymentWithServiceAccount(sa string) *appsv1.Deploy
 								ContainerPort: containerPort,
 								Protocol:      "TCP",
 							}},
-							// Args: []string{"-m"},
+							Args: []string{"-I", storeServerAddress, "-P", storeServerPort},
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: &trueFlag,
 							},

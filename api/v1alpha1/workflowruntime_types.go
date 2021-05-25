@@ -30,6 +30,7 @@ type WorkflowRuntimeSpec struct {
 
 	// Replicas defines the replication of the workflow runtime
 	// Specificly, it determines the replication of Pods in its Deployment
+	// +optional
 	Replicas *int32 `json:"replicas"`
 
 	// TODO: Add some fields
