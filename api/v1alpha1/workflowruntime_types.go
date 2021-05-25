@@ -60,8 +60,6 @@ type Instance struct {
 
 // InstanceStatus describes metadata a Pod has
 type InstanceStatus struct {
-	// CreationTimestamp is a timestamp representing the time when this Pod was created.
-	CreationTimestamp *metav1.Time `json:"creationTimestamp"`
 	// IP address of the host to which the pod is assigned. Empty if not yet scheduled.
 	HostIP *string `json:"hostIP,omitempty"`
 	// IP address allocated to the pod. Routable at least within the cluster. Empty if not yet allocated.

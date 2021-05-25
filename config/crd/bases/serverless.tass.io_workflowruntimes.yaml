@@ -68,11 +68,6 @@ spec:
                   status:
                     description: Status describes metadata a Pod has
                     properties:
-                      creationTimestamp:
-                        description: CreationTimestamp is a timestamp representing
-                          the time when this Pod was created.
-                        format: date-time
-                        type: string
                       hostIP:
                         description: IP address of the host to which the pod is assigned.
                           Empty if not yet scheduled.
@@ -81,8 +76,6 @@ spec:
                         description: IP address allocated to the pod. Routable at
                           least within the cluster. Empty if not yet allocated.
                         type: string
-                    required:
-                    - creationTimestamp
                     type: object
                 required:
                 - processRuntimes
