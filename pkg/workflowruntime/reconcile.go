@@ -2,11 +2,14 @@ package workflowruntime
 
 import (
 	"context"
+	"errors"
+	"time"
 
 	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -49,6 +52,10 @@ func (r Reconciler) Reconcile() error {
 	if err := r.reconcileDeployment(serviceAccountName); err != nil {
 		return err
 	}
+	if err := r.checkDeploymentStatus(); err != nil {
+		return err
+	}
+
 	if err := r.reconcileService(); err != nil {
 		return err
 	}
@@ -84,7 +91,7 @@ func (r Reconciler) reconcileServiceAccount() (*corev1.ServiceAccount, error) {
 		Name:      desired.GetName(),
 		Namespace: desired.GetNamespace()},
 		actual)
-	if err != nil && errors.IsNotFound(err) {
+	if err != nil && k8serrors.IsNotFound(err) {
 		log.Info("Creating serviceaccount", "namespace", desired.Namespace, "name", desired.Name)
 
 		if err := r.cli.Create(ctx, desired); err != nil {
@@ -119,7 +126,7 @@ func (r Reconciler) reconcileRoleBinding(sa *corev1.ServiceAccount) error {
 		Name:      desired.GetName(),
 		Namespace: desired.GetNamespace()},
 		actual)
-	if err != nil && errors.IsNotFound(err) {
+	if err != nil && k8serrors.IsNotFound(err) {
 		log.Info("Creating rolebinding", "namespace", desired.Namespace, "name", desired.Name)
 
 		if err := r.cli.Create(ctx, desired); err != nil {
@@ -187,4 +194,31 @@ func (r Reconciler) reconcileService() error {
 	}
 	log.V(1).Info("Service "+string(operationResult), "name", svc.Name)
 	return nil
+}
+
+// checkDeploymentStatus checks wether all replicas in Deployment is ready, available and updated
+// it watches the status every 2 seconds for at most 15 times
+func (r Reconciler) checkDeploymentStatus() error {
+	ctx := context.Background()
+	namespacedName := types.NamespacedName{
+		Namespace: r.instance.Namespace,
+		Name:      r.instance.Name,
+	}
+	log := r.log.WithValues("deployment", namespacedName)
+	deploy := &appsv1.Deployment{}
+
+	// Waiting for at most 30 second to Deployment update completion
+	for i := 0; i < 15; i++ {
+		if err := r.cli.Get(ctx, namespacedName, deploy); err != nil {
+			return err
+		}
+		if deploy.Status.Replicas == deploy.Status.UpdatedReplicas &&
+			deploy.Status.Replicas == deploy.Status.ReadyReplicas &&
+			deploy.Status.Replicas == deploy.Status.AvailableReplicas {
+			log.Info("All replicas in deployment are ready")
+			return nil
+		}
+		time.Sleep(time.Second * 2)
+	}
+	return errors.New("failed to reconcile replicas in deployment")
 }
