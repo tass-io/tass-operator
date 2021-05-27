@@ -18,16 +18,14 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-logr/logr"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
+	"github.com/tass-io/tass-operator/pkg/endpointslice"
 	"github.com/tass-io/tass-operator/pkg/workflowruntime"
 	discoveryv1beta1 "k8s.io/api/discovery/v1beta1"
 	"k8s.io/apimachinery/pkg/types"
@@ -51,49 +49,20 @@ func (r *WorkflowRuntimeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 	ctx := context.Background()
 	log := r.Log.WithValues("workflowruntime", req.NamespacedName)
 
-	var endpointslice discoveryv1beta1.EndpointSlice
-	if err := r.Get(ctx, req.NamespacedName, &endpointslice); err == nil {
-		// TODO: See below
-		// 1. After getting the endpoint successfully
-		// 2. Get the corresponding WFRT instance
-		// 3. Judge the change of the endpoint address
-		// 4. Patch the new ip and remove the old with nil
+	var eps discoveryv1beta1.EndpointSlice
+	if err := r.Get(ctx, req.NamespacedName, &eps); err == nil {
 		log.Info("fetch endpointslice successfully")
-		fmt.Println("---")
-		for _, item := range endpointslice.Endpoints {
-			fmt.Println(item.Addresses)
+		neweps := eps.DeepCopy()
+		epsr, _ := endpointslice.NewReconciler(r.Client, r.Log, r.Scheme, neweps)
+		if err := epsr.Reconcile(); err != nil {
+			return ctrl.Result{}, err
 		}
-		fmt.Println("---")
 	}
 
 	var original serverlessv1alpha1.WorkflowRuntime
 	if err := r.Get(ctx, req.NamespacedName, &original); err != nil {
 		log.Error(err, "unable to fetch WorkflowRuntime")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
-	}
-
-	var deploy appsv1.Deployment
-	if err := r.Get(ctx, req.NamespacedName, &deploy); err == nil {
-		log.Info("fetch Deployment successfully")
-		fmt.Println("---")
-		fmt.Println(deploy.Name)
-		fmt.Println("---")
-	}
-
-	var service corev1.Service
-	if err := r.Get(ctx, req.NamespacedName, &service); err == nil {
-		log.Info("fetch service successfully")
-		fmt.Println("---")
-		fmt.Println(service.Name)
-		fmt.Println("---")
-	}
-
-	var pod corev1.Pod
-	if err := r.Get(ctx, req.NamespacedName, &pod); err == nil {
-		log.Info("fetch Pod successfully")
-		fmt.Println("---")
-		fmt.Println(pod.Name)
-		fmt.Println("---")
 	}
 
 	// A WorkflowRuntime has its Service and Deployment which
@@ -117,15 +86,6 @@ func (r *WorkflowRuntimeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 func (r *WorkflowRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&serverlessv1alpha1.WorkflowRuntime{}).
-		Owns(&appsv1.Deployment{}).
-		// Owns(&corev1.Pod{}).
-		Owns(&corev1.Service{}).
-		// Watches(
-		// 	&source.Kind{Type: &corev1.Pod{}},
-		// 	&handler.EnqueueRequestsFromMapFunc{
-		// 		ToRequests: handler.ToRequestsFunc(r.findObjectsForPod),
-		// 	},
-		// ).
 		Watches(
 			&source.Kind{Type: &discoveryv1beta1.EndpointSlice{}},
 			&handler.EnqueueRequestsFromMapFunc{
@@ -135,50 +95,36 @@ func (r *WorkflowRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-// 第一参数是指集群内的所有 pod
-func (r *WorkflowRuntimeReconciler) findObjectsForPod(podMap handler.MapObject) []reconcile.Request {
-	podList := &corev1.PodList{}
-	if err := r.List(context.Background(), podList,
-		client.InNamespace(podMap.Meta.GetNamespace()), client.MatchingLabels{
-			"name": "workflow-sample",
-			"type": "workflowRuntime",
-			// TODO: Update this field later
-			// "endpointslice.kubernetes.io/managed-by": "endpointslice-controller.k8s.io",
-			// "kubernetes.io/service-name": "workflow-sample",
-		}); err != nil {
-		return []reconcile.Request{}
-	}
-	requests := make([]reconcile.Request, len(podList.Items))
-	for i, item := range podList.Items {
-		requests[i] = reconcile.Request{
-			NamespacedName: types.NamespacedName{
-				Name:      item.GetName(),
-				Namespace: item.GetNamespace(),
-			},
-		}
-	}
-	return requests
-}
-
-// 第一参数是指集群内的所有 pod
+// findObjectsForEndpointSlice is used to find an endpointslice for workflowruntime
+// This func is the implementation of `ToRequestsFunc func(MapObject) []reconcile.Request`
+// When the controller manager starts, it iterates all endpointslices and chooses suitable resluts
+// For the choosen object, they will be replaced in `reconcile.Request` slice,
+// and the controller manager monitors these resources
 func (r *WorkflowRuntimeReconciler) findObjectsForEndpointSlice(endpointsliceMap handler.MapObject) []reconcile.Request {
-	list := &discoveryv1beta1.EndpointSliceList{}
-	if err := r.List(context.Background(), list,
-		client.InNamespace(endpointsliceMap.Meta.GetNamespace()), client.MatchingLabels{
-			// TODO: Update this field later
-			"endpointslice.kubernetes.io/managed-by": "endpointslice-controller.k8s.io",
-			"kubernetes.io/service-name":             "workflow-sample",
-		}); err != nil {
+	ns := endpointsliceMap.Meta.GetNamespace()
+	endpointsliceLabels := endpointsliceMap.Meta.GetLabels()
+	// this name is the name of the Service name and is the same as Workflow name
+	// so we can get WorkflowRuntime by namespace & name
+	name, ok := endpointsliceLabels["kubernetes.io/service-name"]
+	if !ok {
 		return []reconcile.Request{}
 	}
-	requests := make([]reconcile.Request, len(list.Items))
-	for i, item := range list.Items {
-		requests[i] = reconcile.Request{
-			NamespacedName: types.NamespacedName{
-				Name:      item.GetName(),
-				Namespace: item.GetNamespace(),
+
+	wfrt := serverlessv1alpha1.WorkflowRuntime{}
+	if err := r.Get(context.Background(), types.NamespacedName{
+		Namespace: ns,
+		Name:      name,
+	}, &wfrt); err == nil {
+		// such wfrt exists, then watch the corresponding endpointslice resource
+		return []reconcile.Request{
+			{
+				NamespacedName: types.NamespacedName{
+					Name:      endpointsliceMap.Meta.GetName(),
+					Namespace: ns,
+				},
 			},
 		}
 	}
-	return requests
+
+	return []reconcile.Request{}
 }
