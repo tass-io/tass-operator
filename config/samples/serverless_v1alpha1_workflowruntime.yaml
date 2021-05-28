@@ -1,7 +1,24 @@
+# NOTE: DON'T APPLY THIS FILE!
+# This is a sample of workflowruntime, all contents are all auto generated.
+
 apiVersion: serverless.tass.io/v1alpha1
 kind: WorkflowRuntime
 metadata:
   name: workflowruntime-sample
 spec:
-  # Add fields here
-  foo: bar
+  replicas: 2
+  status:
+    instances:
+      9657bf88d-wb8dt:
+        processRuntimes:
+          function1:
+            number: 1
+          function2:
+            number: 1
+          function3:
+            number: 1
+        status:
+          hostIP: 100.116.95.119
+      9657bf88d-wxpk8:
+        status:
+          hostIP: 100.92.53.107

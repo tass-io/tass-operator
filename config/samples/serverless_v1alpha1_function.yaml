@@ -2,7 +2,10 @@ apiVersion: serverless.tass.io/v1alpha1
 kind: Function
 metadata:
   name: function-sample
+  namespace: default
   labels:
-    
 spec:
   environment: Golang
+  resource:
+    cpu: 1
+    memory: 128Mi
