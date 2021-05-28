@@ -6,7 +6,7 @@ import (
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -49,6 +49,7 @@ func (r Reconciler) Reconcile() error {
 	if err := r.reconcileDeployment(serviceAccountName); err != nil {
 		return err
 	}
+
 	if err := r.reconcileService(); err != nil {
 		return err
 	}
@@ -84,7 +85,7 @@ func (r Reconciler) reconcileServiceAccount() (*corev1.ServiceAccount, error) {
 		Name:      desired.GetName(),
 		Namespace: desired.GetNamespace()},
 		actual)
-	if err != nil && errors.IsNotFound(err) {
+	if err != nil && k8serrors.IsNotFound(err) {
 		log.Info("Creating serviceaccount", "namespace", desired.Namespace, "name", desired.Name)
 
 		if err := r.cli.Create(ctx, desired); err != nil {
@@ -119,7 +120,7 @@ func (r Reconciler) reconcileRoleBinding(sa *corev1.ServiceAccount) error {
 		Name:      desired.GetName(),
 		Namespace: desired.GetNamespace()},
 		actual)
-	if err != nil && errors.IsNotFound(err) {
+	if err != nil && k8serrors.IsNotFound(err) {
 		log.Info("Creating rolebinding", "namespace", desired.Namespace, "name", desired.Name)
 
 		if err := r.cli.Create(ctx, desired); err != nil {

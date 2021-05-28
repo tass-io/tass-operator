@@ -47,7 +47,7 @@ type WorkflowRuntimeSpec struct {
 type WfrtStatus struct {
 	// Instances is a Pod List that WorkflowRuntime Manages
 	// +optional
-	Instances Instances `json:"instances"`
+	Instances Instances `json:"instances,omitempty"`
 }
 
 // WorkflowRuntimeStatus defines the observed state of WorkflowRuntime

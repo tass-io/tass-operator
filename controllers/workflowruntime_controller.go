@@ -25,7 +25,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
+	"github.com/tass-io/tass-operator/pkg/endpointslice"
 	"github.com/tass-io/tass-operator/pkg/workflowruntime"
+	discoveryv1beta1 "k8s.io/api/discovery/v1beta1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // WorkflowRuntimeReconciler reconciles a WorkflowRuntime object
@@ -37,10 +43,21 @@ type WorkflowRuntimeReconciler struct {
 
 // +kubebuilder:rbac:groups=serverless.tass.io,resources=workflowruntimes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=serverless.tass.io,resources=workflowruntimes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=discovery.k8s.io,resources=endpointslices,verbs=get;list;watch;create;update;patch;delete
 
 func (r *WorkflowRuntimeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("workflowruntime", req.NamespacedName)
+
+	var eps discoveryv1beta1.EndpointSlice
+	if err := r.Get(ctx, req.NamespacedName, &eps); err == nil {
+		log.Info("fetch endpointslice successfully")
+		neweps := eps.DeepCopy()
+		epsr, _ := endpointslice.NewReconciler(r.Client, r.Log, r.Scheme, neweps)
+		if err := epsr.Reconcile(); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
 
 	var original serverlessv1alpha1.WorkflowRuntime
 	if err := r.Get(ctx, req.NamespacedName, &original); err != nil {
@@ -69,5 +86,45 @@ func (r *WorkflowRuntimeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 func (r *WorkflowRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&serverlessv1alpha1.WorkflowRuntime{}).
+		Watches(
+			&source.Kind{Type: &discoveryv1beta1.EndpointSlice{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: handler.ToRequestsFunc(r.findObjectsForEndpointSlice),
+			},
+		).
 		Complete(r)
+}
+
+// findObjectsForEndpointSlice is used to find an endpointslice for workflowruntime
+// This func is the implementation of `ToRequestsFunc func(MapObject) []reconcile.Request`
+// When the controller manager starts, it iterates all endpointslices and chooses suitable resluts
+// For the choosen object, they will be replaced in `reconcile.Request` slice,
+// and the controller manager monitors these resources
+func (r *WorkflowRuntimeReconciler) findObjectsForEndpointSlice(endpointsliceMap handler.MapObject) []reconcile.Request {
+	ns := endpointsliceMap.Meta.GetNamespace()
+	endpointsliceLabels := endpointsliceMap.Meta.GetLabels()
+	// this name is the name of the Service name and is the same as Workflow name
+	// so we can get WorkflowRuntime by namespace & name
+	name, ok := endpointsliceLabels["kubernetes.io/service-name"]
+	if !ok {
+		return []reconcile.Request{}
+	}
+
+	wfrt := serverlessv1alpha1.WorkflowRuntime{}
+	if err := r.Get(context.Background(), types.NamespacedName{
+		Namespace: ns,
+		Name:      name,
+	}, &wfrt); err == nil {
+		// such wfrt exists, then watch the corresponding endpointslice resource
+		return []reconcile.Request{
+			{
+				NamespacedName: types.NamespacedName{
+					Name:      endpointsliceMap.Meta.GetName(),
+					Namespace: ns,
+				},
+			},
+		}
+	}
+
+	return []reconcile.Request{}
 }
