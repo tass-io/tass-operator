@@ -80,7 +80,7 @@ func (r Reconciler) Reconcile() error {
 				Op:   jsonpatch.OperationReplace,
 				Path: jsonpatch.SetPath(false, "spec", "status", "instances", name, "status"),
 				Value: serverlessv1alpha1.InstanceStatus{
-					HostIP: &address,
+					PodIP: &address,
 				},
 			}
 			jsonPatchItems = append(jsonPatchItems, newItem)
@@ -101,7 +101,7 @@ func (r Reconciler) Reconcile() error {
 			Op:   jsonpatch.OperationAdd,
 			Path: jsonpatch.SetPath(false, "spec", "status", "instances", name),
 			Value: serverlessv1alpha1.Instance{
-				Status: &serverlessv1alpha1.InstanceStatus{HostIP: &address},
+				Status: &serverlessv1alpha1.InstanceStatus{PodIP: &address},
 			},
 		}
 		jsonPatchItems = append(jsonPatchItems, newItem)

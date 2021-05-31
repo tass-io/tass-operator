@@ -2,6 +2,7 @@ package workflowruntime
 
 import (
 	"fmt"
+	"strconv"
 
 	serverlessv1alpha1 "github.com/tass-io/tass-operator/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -15,8 +16,8 @@ const (
 	defaultRole = "tass-operator"
 	// local scheduler image info
 	imageName          = "registry.cn-hangzhou.aliyuncs.com/tass/local-scheduler"
-	imageVersion       = "v0.1.7"
-	containerPort      = 8080
+	imageVersion       = "v0.1.9"
+	containerPort      = 80
 	storeServerAddress = "100.92.53.83"
 	storeServerPort    = "6379"
 )
@@ -51,10 +52,10 @@ func (g generator) desiredService() *corev1.Service {
 			Ports: []corev1.ServicePort{
 				{
 					Protocol: "TCP",
-					Port:     8080,
+					Port:     containerPort,
 					TargetPort: intstr.IntOrString{
 						Type:   0,
-						IntVal: 8080,
+						IntVal: containerPort,
 					},
 				},
 			},
@@ -91,7 +92,11 @@ func (g generator) desiredDeploymentWithServiceAccount(sa string) *appsv1.Deploy
 								ContainerPort: containerPort,
 								Protocol:      "TCP",
 							}},
-							Args: []string{"-I", storeServerAddress, "-P", storeServerPort},
+							Args: []string{
+								"-i", "-m",
+								"-a", strconv.Itoa(containerPort),
+								"-I", storeServerAddress, "-P", storeServerPort,
+							},
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: &trueFlag,
 							},

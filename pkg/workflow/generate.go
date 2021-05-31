@@ -24,6 +24,7 @@ func newGenerator(wf *serverlessv1alpha1.Workflow) (*generator, error) {
 // desiredWorkflowRuntime returns a default config of WorkflowRuntime resource
 func (g generator) desiredWorkflowRuntime() *serverlessv1alpha1.WorkflowRuntime {
 	replicas := int32(2)
+	podip := "localhost"
 	return &serverlessv1alpha1.WorkflowRuntime{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: g.workflow.Namespace,
@@ -32,6 +33,17 @@ func (g generator) desiredWorkflowRuntime() *serverlessv1alpha1.WorkflowRuntime 
 		// TODO: Provide customization future
 		Spec: &serverlessv1alpha1.WorkflowRuntimeSpec{
 			Replicas: &replicas,
+			Status: serverlessv1alpha1.WfrtStatus{
+				// NOTE: This part initializing is essential,
+				// or the operator cannnot send a add json-patch action at the first time.
+				Instances: serverlessv1alpha1.Instances{
+					"init": serverlessv1alpha1.Instance{
+						Status: &serverlessv1alpha1.InstanceStatus{
+							PodIP: &podip,
+						},
+					},
+				},
+			},
 		},
 	}
 }
