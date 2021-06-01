@@ -1,0 +1,45 @@
+# A direct pipeline with one start and one end
+#
+#        |
+#        v
+#    +-------+
+#    | start |
+#    +-------+
+#        |
+#        v
+#    +-------+
+#    | next  |
+#    +-------+
+#        |
+#        v
+#    +-------+
+#    |  end  |
+#    +-------+
+#        |
+#        v
+#
+apiVersion: serverless.tass.io/v1alpha1
+kind: Workflow
+metadata:
+  namespace: default
+  name: workflow-sample
+spec:
+  env:
+    lang: CH
+    kind: pipeline
+  spec:
+  - name: start
+    function: function1
+    statement: direct
+    outputs:
+    - next
+    role: start
+  - name: next
+    function: function2
+    statement: direct
+    outputs:
+    - end
+  - name: end
+    function: function3
+    statement: direct
+    role: end
