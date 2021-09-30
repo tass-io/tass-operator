@@ -47,7 +47,7 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		log.Error(err, "unable to fetch Workflow")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	log.V(1).Info("The Workflow Spec is", "spec", original.Spec.Spec)
+	log.Info("the Workflow Spec is", "spec", original.Spec.Spec)
 
 	var functionList serverlessv1alpha1.FunctionList
 	if err := r.List(ctx, &functionList, client.InNamespace(req.Namespace)); err != nil {
@@ -58,13 +58,13 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// TODO: This kind of check should be placed in the admission webhook
 	// Put here temporarily
 	if err := workflow.ValidateFuncExist(&original, &functionList); err != nil {
-		log.Error(err, "Workflow validation error")
+		log.Error(err, "workflow validation error")
 		// TODO: The webhook should ABORT directly
 		// Here we simply pass the check
 		// return ctrl.Result{}, nil
 	}
 	if err := workflow.ValidateFlows(&original); err != nil {
-		log.Error(err, "Workflow validation error")
+		log.Error(err, "workflow validation error")
 		// TODO: The webhook should ABORT directly
 		// Here we simply pass the check
 		// return ctrl.Result{}, nil
@@ -77,7 +77,7 @@ func (r *WorkflowReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	// A Workflow has its WorkflowRuntime which run Functions in Workflow when a request comes
 	instance := original.DeepCopy()
-	wfr, err := workflow.NewReconciler(r.Client, r.Log, r.Scheme, instance)
+	wfr, err := workflow.NewReconciler(r.Client, log, r.Scheme, instance)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

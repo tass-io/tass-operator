@@ -53,7 +53,7 @@ func (r *WorkflowRuntimeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 	if err := r.Get(ctx, req.NamespacedName, &eps); err == nil {
 		log.Info("fetch endpointslice successfully")
 		neweps := eps.DeepCopy()
-		epsr, _ := endpointslice.NewReconciler(r.Client, r.Log, r.Scheme, neweps)
+		epsr, _ := endpointslice.NewReconciler(r.Client, log, r.Scheme, neweps)
 		if err := epsr.Reconcile(); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -72,7 +72,7 @@ func (r *WorkflowRuntimeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 		"name": req.NamespacedName.Name,
 	}
 	instance := original.DeepCopy()
-	wfrtr, err := workflowruntime.NewReconciler(r.Client, r.Log, r.Scheme, instance, labels)
+	wfrtr, err := workflowruntime.NewReconciler(r.Client, log, r.Scheme, instance, labels)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -95,11 +95,11 @@ func (r *WorkflowRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-// findObjectsForEndpointSlice is used to find an endpointslice for workflowruntime
-// This func is the implementation of `ToRequestsFunc func(MapObject) []reconcile.Request`
+// findObjectsForEndpointSlice is used to find an endpointslice for workflowruntime.
+// This func is the implementation of `ToRequestsFunc func(MapObject) []reconcile.Request`.
 // When the controller manager starts, it iterates all endpointslices and chooses suitable resluts
 // For the choosen object, they will be replaced in `reconcile.Request` slice,
-// and the controller manager monitors these resources
+// and then this request will be reconciled by `WorkflowRuntimeReconciler.Reconcile` func.
 func (r *WorkflowRuntimeReconciler) findObjectsForEndpointSlice(endpointsliceMap handler.MapObject) []reconcile.Request {
 	ns := endpointsliceMap.Meta.GetNamespace()
 	endpointsliceLabels := endpointsliceMap.Meta.GetLabels()
@@ -115,7 +115,19 @@ func (r *WorkflowRuntimeReconciler) findObjectsForEndpointSlice(endpointsliceMap
 		Namespace: ns,
 		Name:      name,
 	}, &wfrt); err == nil {
-		// such wfrt exists, then watch the corresponding endpointslice resource
+		// such wfrt exists, then send the request to the `WorkflowRuntimeReconciler.Reconcile` function
+		// TODO: note that here we use an naive way to send the request, so the Reconcile func must send a
+		// request to the apiserver to check the resource type first. We should make the process more efficient.
+		// for example, we can modify the name here like:
+		//
+		// {
+		// 	NamespacedName: types.NamespacedName{
+		// 		Name:      endpointsliceMap.Meta.GetName() + "-endpointslice",
+		// 		Namespace: ns,
+		// 	},
+		// }
+		// and then we can use the `WorkflowRuntimeReconciler.Reconcile` func to parse the resource
+		//
 		return []reconcile.Request{
 			{
 				NamespacedName: types.NamespacedName{

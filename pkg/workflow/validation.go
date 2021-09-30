@@ -55,7 +55,7 @@ func ValidateFlows(wf *serverlessv1alpha1.Workflow) error {
 		outputMap := map[string]bool{}
 		for _, output := range flow.Outputs {
 			if _, ok := flowMap[output]; !ok {
-				return errors.New("Output " + output + " in Flow " + flow.Name + " has not define")
+				return errors.New("output " + output + " in Flow " + flow.Name + " has not define")
 			}
 			outputMap[output] = true
 		}

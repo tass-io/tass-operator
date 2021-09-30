@@ -15,8 +15,8 @@ import (
 const (
 	defaultRole = "tass-operator"
 	// local scheduler image info
-	imageName          = "registry.cn-hangzhou.aliyuncs.com/tass/local-scheduler"
-	imageVersion       = "v0.1.9"
+	imageName          = "registry.cn-shanghai.aliyuncs.com/tassio/scheduler"
+	imageVersion       = "v0.1.10"
 	containerPort      = 80
 	storeServerAddress = "100.92.53.83"
 	storeServerPort    = "6379"
@@ -93,7 +93,7 @@ func (g generator) desiredDeploymentWithServiceAccount(sa string) *appsv1.Deploy
 								Protocol:      "TCP",
 							}},
 							Args: []string{
-								"-i", "-m",
+								// "-i", "-m",
 								"-a", strconv.Itoa(containerPort),
 								"-I", storeServerAddress, "-P", storeServerPort,
 							},

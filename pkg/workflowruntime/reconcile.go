@@ -41,7 +41,7 @@ func NewReconciler(cli client.Client, l logr.Logger,
 	}, nil
 }
 
-func (r Reconciler) Reconcile() error {
+func (r *Reconciler) Reconcile() error {
 	serviceAccountName, err := r.reconcileRBAC()
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func (r Reconciler) Reconcile() error {
 	return nil
 }
 
-func (r Reconciler) reconcileRBAC() (string, error) {
+func (r *Reconciler) reconcileRBAC() (string, error) {
 	sa, err := r.reconcileServiceAccount()
 	if err != nil {
 		return "", err
@@ -67,7 +67,7 @@ func (r Reconciler) reconcileRBAC() (string, error) {
 	return sa.Name, nil
 }
 
-func (r Reconciler) reconcileServiceAccount() (*corev1.ServiceAccount, error) {
+func (r *Reconciler) reconcileServiceAccount() (*corev1.ServiceAccount, error) {
 	ctx := context.Background()
 	namespacedName := types.NamespacedName{
 		Namespace: r.instance.Namespace,
@@ -86,21 +86,19 @@ func (r Reconciler) reconcileServiceAccount() (*corev1.ServiceAccount, error) {
 		Namespace: desired.GetNamespace()},
 		actual)
 	if err != nil && k8serrors.IsNotFound(err) {
-		log.Info("Creating serviceaccount", "namespace", desired.Namespace, "name", desired.Name)
-
 		if err := r.cli.Create(ctx, desired); err != nil {
-			log.Error(err, "Failed to create the serviceaccount", "serviceaccount", desired.Name)
+			log.Error(err, "failed to create the serviceaccount")
 			return nil, err
 		}
 	} else if err != nil {
-		log.Error(err, "failed to get the expected serviceaccount", "serviceaccount", desired.Name)
+		log.Error(err, "failed to get the expected serviceaccount")
 		return nil, err
 	}
 	// When the sa is created, actual is nil. Thus actual cannot be used to build rolebinding.
 	return desired, nil
 }
 
-func (r Reconciler) reconcileRoleBinding(sa *corev1.ServiceAccount) error {
+func (r *Reconciler) reconcileRoleBinding(sa *corev1.ServiceAccount) error {
 	ctx := context.Background()
 	namespacedName := types.NamespacedName{
 		Namespace: r.instance.Namespace,
@@ -111,7 +109,7 @@ func (r Reconciler) reconcileRoleBinding(sa *corev1.ServiceAccount) error {
 	desired := r.gen.desiredRoleBinding(sa)
 
 	if err := ctrl.SetControllerReference(r.instance, desired, r.scheme); err != nil {
-		log.Error(err, "Set controller reference error, requeuing the request")
+		log.Error(err, "set controller reference error, requeuing the request")
 		return err
 	}
 
@@ -121,21 +119,19 @@ func (r Reconciler) reconcileRoleBinding(sa *corev1.ServiceAccount) error {
 		Namespace: desired.GetNamespace()},
 		actual)
 	if err != nil && k8serrors.IsNotFound(err) {
-		log.Info("Creating rolebinding", "namespace", desired.Namespace, "name", desired.Name)
-
 		if err := r.cli.Create(ctx, desired); err != nil {
-			log.Error(err, "Failed to create the rolebinding", "rolebinding", desired.Name)
+			log.Error(err, "failed to create the rolebinding")
 			return err
 		}
 	} else if err != nil {
-		log.Error(err, "failed to get the expected rolebinding", "rolebinding", desired.Name)
+		log.Error(err, "failed to get the expected rolebinding")
 		return err
 	}
 	return nil
 }
 
 // reconcileDeployment creates a new Deploy resource or updates an existing Deploy
-func (r Reconciler) reconcileDeployment(serviceAccountName string) error {
+func (r *Reconciler) reconcileDeployment(serviceAccountName string) error {
 	ctx := context.Background()
 	namespacedName := types.NamespacedName{
 		Namespace: r.instance.Namespace,
@@ -158,16 +154,16 @@ func (r Reconciler) reconcileDeployment(serviceAccountName string) error {
 
 	operationResult, err := controllerutil.CreateOrUpdate(ctx, r.cli, deploy, deployMutateFn)
 	if err != nil {
-		log.Error(err, "Cannot create/update Deployment")
+		log.Error(err, "cannot create/update Deployment")
 		return err
 	}
-	log.V(1).Info("Deployment "+string(operationResult), "name", deploy.Name)
+	log.Info("Deployment "+string(operationResult))
 	return nil
 }
 
 // reconcileService creates a new Service resource,
 // if the resource exists, it will ignore the request
-func (r Reconciler) reconcileService() error {
+func (r *Reconciler) reconcileService() error {
 	ctx := context.Background()
 	namespacedName := types.NamespacedName{
 		Namespace: r.instance.Namespace,
@@ -183,9 +179,9 @@ func (r Reconciler) reconcileService() error {
 	operationResult, err :=
 		controllerutil.CreateOrUpdate(ctx, r.cli, svc, func() error { return nil })
 	if err != nil {
-		log.Error(err, "Cannot create/update Service")
+		log.Error(err, "cannot create/update Service")
 		return err
 	}
-	log.V(1).Info("Service "+string(operationResult), "name", svc.Name)
+	log.Info("Service "+string(operationResult))
 	return nil
 }

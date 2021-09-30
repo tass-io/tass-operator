@@ -36,13 +36,13 @@ func NewReconciler(cli client.Client, l logr.Logger,
 	}, nil
 }
 
-func (r Reconciler) Reconcile() error {
+func (r *Reconciler) Reconcile() error {
 	ctx := context.Background()
+	log := r.log
 	namespacedName := types.NamespacedName{
 		Namespace: r.instance.Namespace,
 		Name:      r.instance.Name,
 	}
-	log := r.log.WithValues("workflowruntime", namespacedName)
 
 	wfrt := r.gen.desiredWorkflowRuntime()
 	if err := ctrl.SetControllerReference(r.instance, wfrt, r.scheme); err != nil {
@@ -55,10 +55,10 @@ func (r Reconciler) Reconcile() error {
 			return err
 		}
 		// Successfully created a WorkflowRuntime
-		log.V(1).Info("WorkflowRuntime Created successfully", "name", wfrt.Name)
+		log.Info("WorkflowRuntime Created successfully", "wfrt", namespacedName)
 		return nil
 	} else if err != nil {
-		log.Error(err, "Cannot create WorkflowRuntime")
+		log.Error(err, "cannot create WorkflowRuntime", "wfrt", namespacedName)
 		return err
 	}
 

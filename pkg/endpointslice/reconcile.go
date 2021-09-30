@@ -53,7 +53,7 @@ func (r Reconciler) Reconcile() error {
 		itemName := getPodSelfName(item.TargetRef.Name)
 		currentSvcMesh[itemName] = item.Addresses[0]
 	}
-	log.Info("Get endpointslice info successfully")
+	log.Info("get endpointslice info successfully")
 
 	// 2. Get the corresponding WorkflowRuntime instance
 	//
@@ -68,7 +68,7 @@ func (r Reconciler) Reconcile() error {
 
 	// 3. Check the change of the endpoint address, add the new ip and remove the deprecated with nil
 	//
-	log.Info("Check the change of the endpoint address")
+	log.Info("check the change of the endpoint address")
 	jsonPatchItems := []jsonpatch.JsonPatchItem{}
 	// 3.1 check the existed info of WorkflowRuntime resource instance
 	//
@@ -118,7 +118,7 @@ func (r Reconciler) Reconcile() error {
 	}, client.RawPatch(types.JSONPatchType, patchBytes)); err != nil {
 		return err
 	}
-	log.Info("Update the Workflow runtime " + wfrtNamespacedName.String() + " successfully")
+	log.Info("update the Workflow runtime " + wfrtNamespacedName.String() + " successfully")
 
 	return nil
 }

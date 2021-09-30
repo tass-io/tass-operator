@@ -65,19 +65,19 @@ func (r *FunctionReconciler) DoFinal(instance serverlessv1alpha1.Function) error
 		// then lets add the finalizer and update the object. This is equivalent
 		// registering our finalizer.
 		if !containsString(instance.ObjectMeta.Finalizers, fnFinalizerName) {
-			r.Log.V(1).Info("Add Function finalizer...")
+			r.Log.Info("add Function finalizer...")
 			instance.ObjectMeta.Finalizers = append(instance.ObjectMeta.Finalizers, fnFinalizerName)
 			if err := r.Update(ctx, &instance); err != nil {
 				return err
 			}
-			r.Log.V(1).Info("Add Function finalizer successfully")
+			r.Log.Info("add Function finalizer successfully")
 		}
 	} else {
-		r.Log.V(1).Info("Remove Function finalizer...")
+		r.Log.Info("remove Function finalizer...")
 		// The object is being deleted
 		if containsString(instance.ObjectMeta.Finalizers, fnFinalizerName) {
 			// our finalizer is present, so lets handle any external dependency
-			r.Log.V(1).Info("Do finalizer...")
+			r.Log.Info("do finalizer...")
 			// Mock take some time to remove a Resource
 			time.Sleep(time.Second * 5)
 			// remove our finalizer from the list and update it.
@@ -85,7 +85,7 @@ func (r *FunctionReconciler) DoFinal(instance serverlessv1alpha1.Function) error
 			if err := r.Update(ctx, &instance); err != nil {
 				return err
 			}
-			r.Log.V(1).Info("Remove Function finalizer successfully")
+			r.Log.Info("remove Function finalizer successfully")
 		}
 	}
 	// Stop finalizer as the item is being deleted
