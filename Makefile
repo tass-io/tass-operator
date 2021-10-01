@@ -78,3 +78,6 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
+lint:
+	golangci-lint run --deadline=10m ./...
