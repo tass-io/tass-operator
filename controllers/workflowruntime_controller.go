@@ -41,6 +41,7 @@ type WorkflowRuntimeReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// nolint
 // +kubebuilder:rbac:groups=serverless.tass.io,resources=workflowruntimes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=serverless.tass.io,resources=workflowruntimes/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=discovery.k8s.io,resources=endpointslices,verbs=get;list;watch;create;update;patch;delete
@@ -89,18 +90,18 @@ func (r *WorkflowRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &discoveryv1beta1.EndpointSlice{}},
 			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: handler.ToRequestsFunc(r.findObjectsForEndpointSlice),
+				ToRequests: handler.ToRequestsFunc(r.findObjsForEndpointSlice),
 			},
 		).
 		Complete(r)
 }
 
-// findObjectsForEndpointSlice is used to find an endpointslice for workflowruntime.
+// findObjsForEndpointSlice is used to find an endpointslice for workflowruntime.
 // This func is the implementation of `ToRequestsFunc func(MapObject) []reconcile.Request`.
 // When the controller manager starts, it iterates all endpointslices and chooses suitable resluts
-// For the choosen object, they will be replaced in `reconcile.Request` slice,
+// For the chosen object, they will be replaced in `reconcile.Request` slice,
 // and then this request will be reconciled by `WorkflowRuntimeReconciler.Reconcile` func.
-func (r *WorkflowRuntimeReconciler) findObjectsForEndpointSlice(endpointsliceMap handler.MapObject) []reconcile.Request {
+func (r *WorkflowRuntimeReconciler) findObjsForEndpointSlice(endpointsliceMap handler.MapObject) []reconcile.Request {
 	ns := endpointsliceMap.Meta.GetNamespace()
 	endpointsliceLabels := endpointsliceMap.Meta.GetLabels()
 	// this name is the name of the Service name and is the same as Workflow name

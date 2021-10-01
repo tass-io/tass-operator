@@ -69,14 +69,14 @@ func (r Reconciler) Reconcile() error {
 	// 3. Check the change of the endpoint address, add the new ip and remove the deprecated with nil
 	//
 	log.Info("check the change of the endpoint address")
-	jsonPatchItems := []jsonpatch.JsonPatchItem{}
+	jsonPatchItems := []jsonpatch.Item{}
 	// 3.1 check the existed info of WorkflowRuntime resource instance
 	//
 	for name := range wfrt.Spec.Status.Instances {
 		address, ok := currentSvcMesh[name]
 		if ok {
 			// put address into wfrt
-			newItem := jsonpatch.JsonPatchItem{
+			newItem := jsonpatch.Item{
 				Op:   jsonpatch.OperationReplace,
 				Path: jsonpatch.SetPath(false, "spec", "status", "instances", name, "status"),
 				Value: serverlessv1alpha1.InstanceStatus{
@@ -87,7 +87,7 @@ func (r Reconciler) Reconcile() error {
 			delete(currentSvcMesh, name)
 		} else {
 			// this pod is terminated, delete info in wfrt
-			newItem := jsonpatch.JsonPatchItem{
+			newItem := jsonpatch.Item{
 				Op:   jsonpatch.OperationRemove,
 				Path: jsonpatch.SetPath(false, "spec", "status", "instances", name),
 			}
@@ -97,7 +97,7 @@ func (r Reconciler) Reconcile() error {
 	// 3.2 the rest currentSvcMesh objects are new elements
 	//
 	for name, address := range currentSvcMesh {
-		newItem := jsonpatch.JsonPatchItem{
+		newItem := jsonpatch.Item{
 			Op:   jsonpatch.OperationAdd,
 			Path: jsonpatch.SetPath(false, "spec", "status", "instances", name),
 			Value: serverlessv1alpha1.Instance{

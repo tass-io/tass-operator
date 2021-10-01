@@ -30,19 +30,19 @@ import "strings"
 //
 // See more in http://jsonpatch.com/
 
-// JsonPatchItem specifies a patch operation for a string.
-type JsonPatchItem struct {
-	Op    JsonPatchOperation `json:"op"`
-	Path  string             `json:"path"`
-	Value interface{}        `json:"value,omitempty"`
+// Item specifies a patch operation for a string.
+type Item struct {
+	Op    Operation   `json:"op"`
+	Path  string      `json:"path"`
+	Value interface{} `json:"value,omitempty"`
 }
 
-type JsonPatchOperation string
+type Operation string
 
 const (
-	OperationAdd     JsonPatchOperation = "add"
-	OperationReplace JsonPatchOperation = "replace"
-	OperationRemove  JsonPatchOperation = "remove"
+	OperationAdd     Operation = "add"
+	OperationReplace Operation = "replace"
+	OperationRemove  Operation = "remove"
 )
 
 // SetPath returns the Path for JsonPatchItem
@@ -55,8 +55,8 @@ func SetPath(needTransfer bool, paths ...string) string {
 	}
 	transferred := []string{}
 	for _, path := range paths {
-		tmp := strings.Replace(path, "~", "~0", -1)
-		tmp = strings.Replace(tmp, "/", "~1", -1)
+		tmp := strings.ReplaceAll(path, "~", "~0")
+		tmp = strings.ReplaceAll(tmp, "/", "~1")
 		transferred = append(transferred, tmp)
 	}
 	return SetPath(false, transferred...)

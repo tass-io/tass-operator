@@ -155,6 +155,7 @@ type Condition struct {
 	// Let's say the result is {"$":{"name":"tass","info":{"type":"fn","timeout":60}}}
 	// We want the "timeout" key, so the Target value is "$.info.timeout"
 	Target string `json:"target,omitempty"`
+	// FIXME: misspell should be Comparison
 	// Comparision is used to compare with the flow result
 	// Comparision can be a realistic value, like "cash", "5", "true"
 	// it can also be a property of the flow result, like "$.b"

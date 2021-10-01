@@ -35,7 +35,7 @@ func (g generator) desiredWorkflowRuntime() *serverlessv1alpha1.WorkflowRuntime 
 			Replicas: &replicas,
 			Status: serverlessv1alpha1.WfrtStatus{
 				// NOTE: This part initializing is essential,
-				// or the operator cannnot send a add json-patch action at the first time.
+				// or the operator cannot send a add json-patch action at the first time.
 				Instances: serverlessv1alpha1.Instances{
 					"init": serverlessv1alpha1.Instance{
 						Status: &serverlessv1alpha1.InstanceStatus{

@@ -157,7 +157,7 @@ func (r *Reconciler) reconcileDeployment(serviceAccountName string) error {
 		log.Error(err, "cannot create/update Deployment")
 		return err
 	}
-	log.Info("Deployment "+string(operationResult))
+	log.Info("Deployment " + string(operationResult))
 	return nil
 }
 
@@ -182,6 +182,6 @@ func (r *Reconciler) reconcileService() error {
 		log.Error(err, "cannot create/update Service")
 		return err
 	}
-	log.Info("Service "+string(operationResult))
+	log.Info("Service " + string(operationResult))
 	return nil
 }
