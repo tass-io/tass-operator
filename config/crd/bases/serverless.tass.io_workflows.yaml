@@ -54,14 +54,14 @@ spec:
                     items:
                       description: "Condition is the control logic of the flow A sample
                         of Condition ```yaml condition: \t name: root \t type: int
-                        \t operator: gt \t target: $.a \t comparision: 50 \t destination:
+                        \t operator: gt \t target: $.a \t comparison: 50 \t destination:
                         \t\t isTrue:  # ... \t\t isFalse: # ... ``` It is same as:
                         if $.a >= 50 { \t goto isTrue logic } else { \t goto isFalse
                         logic }"
                       properties:
-                        comparision:
-                          description: Comparision is used to compare with the flow
-                            result Comparision can be a realistic value, like "cash",
+                        comparison:
+                          description: Comparison is used to compare with the flow
+                            result Comparison can be a realistic value, like "cash",
                             "5", "true" it can also be a property of the flow result,
                             like "$.b"
                           type: string
@@ -139,7 +139,7 @@ spec:
                             result of user code is not a simple type, it can be much
                             more complex For example, the Flow result can be {\"$\":{\"name\":
                             \"tass\",\"type\": \"faas\"}} So in this case, if we want
-                            to use the \"type\" property to compare with Comparision,
+                            to use the \"type\" property to compare with Comparison,
                             the Target value should be \"$.type\" \n If users don't
                             specify the Target field,or the Target value is just \"$\",
                             it means the user code result is just a simple type Otherwise,
@@ -160,7 +160,7 @@ spec:
                           - bool
                           type: string
                       required:
-                      - comparision
+                      - comparison
                       - destination
                       - name
                       - operator

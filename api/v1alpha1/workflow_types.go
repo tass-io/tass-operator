@@ -105,7 +105,7 @@ const (
 // 	 type: int
 // 	 operator: gt
 // 	 target: $.a
-// 	 comparision: 50
+// 	 comparison: 50
 // 	 destination:
 // 		 isTrue:  # ...
 // 		 isFalse: # ...
@@ -146,7 +146,7 @@ type Condition struct {
 	// If the result of user code is not a simple type, it can be much more complex
 	// For example, the Flow result can be {"$":{"name": "tass","type": "faas"}}
 	// So in this case, if we want to use the "type" property
-	// to compare with Comparision, the Target value should be "$.type"
+	// to compare with Comparison, the Target value should be "$.type"
 	//
 	// If users don't specify the Target field,or the Target value is just "$",
 	// it means the user code result is just a simple type
@@ -155,11 +155,10 @@ type Condition struct {
 	// Let's say the result is {"$":{"name":"tass","info":{"type":"fn","timeout":60}}}
 	// We want the "timeout" key, so the Target value is "$.info.timeout"
 	Target string `json:"target,omitempty"`
-	// FIXME: misspell should be Comparison
-	// Comparision is used to compare with the flow result
-	// Comparision can be a realistic value, like "cash", "5", "true"
+	// Comparison is used to compare with the flow result
+	// Comparison can be a realistic value, like "cash", "5", "true"
 	// it can also be a property of the flow result, like "$.b"
-	Comparision Comparision `json:"comparision"`
+	Comparison Comparison `json:"comparison"`
 	// Destination defines the downstream Flows based on the condition result
 	Destination Destination `json:"destination"`
 }
@@ -196,10 +195,10 @@ const (
 	Ge OperatorType = "ge"
 )
 
-// Comparision is used to compare with the flow result
-// Comparision can be string, int or bool
+// Comparison is used to compare with the flow result
+// Comparison can be string, int or bool
 // TODO: Validation needed
-type Comparision string
+type Comparison string
 
 // Destination defines the downstream Flows based on the condition result
 // When a Flow finishes its task, the result of the Flow goes to the downstream Flows
