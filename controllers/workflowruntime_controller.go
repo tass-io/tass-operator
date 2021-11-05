@@ -58,12 +58,16 @@ func (r *WorkflowRuntimeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 		if err := epsr.Reconcile(); err != nil {
 			return ctrl.Result{}, err
 		}
+		return ctrl.Result{}, nil
 	}
 
 	var original serverlessv1alpha1.WorkflowRuntime
 	if err := r.Get(ctx, req.NamespacedName, &original); err != nil {
+		if client.IgnoreNotFound(err) == nil {
+			return ctrl.Result{}, nil
+		}
 		log.Error(err, "unable to fetch WorkflowRuntime")
-		return ctrl.Result{}, client.IgnoreNotFound(err)
+		return ctrl.Result{}, err
 	}
 
 	// A WorkflowRuntime has its Service and Deployment which
